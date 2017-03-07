@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+<style>
+
+</style>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+
+<script type="text/javascript">
+"use strict";
+//constants
+var tileWidth=64;
+var tileHeight=74;
+var map=[];
+var main;//the element containing the grid
+//array of offsets that are adjacent to the hex
+function get_adjacency(x,y){
+	//east clockwise to northeast, even/odd rows
+	var neighbours=[[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
+				[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]];
+	return neighbours[y%2];
+}
+
+function generateMap(){
+	var dim={x:10,y:15};
+	var seed=71;
+	
+	
+	
+	for(var i=0;i<dim.x;i++){
+		map[i]=[];
+		for(var j=0;j<dim.y;j++){
+			
+			var tile=new MapTile((Math.random()>0.8)?"grass":"dirt",null);
+			map[i][j]=tile;
+		}
+	}
+}
+function MapTile(terrain,element){
+	this.terrain=terrain;
+	this.element=element;
+	//this.building="yes";
+}
+function init(){
+	main=document.getElementById("main");
+	generateMap();
+	drawMap();
+}
+function drawMap(){
+	for(var i=0;i<map.length;i++){
+		for(var j=0;j<map[i].length;j++){
+			var tile=map[i][j];
+			var img=document.createElement("img");
+			img.src=tile.terrain+".png";
+			var offset=(j%2==0)?0:tileWidth/2;//offset for odd rows
+			var topInterv=tileHeight - (tileWidth/2) * Math.tan(Math.PI/6);
+			var leftInterv=tileWidth;
+			var top=j*topInterv;
+			var left=i*leftInterv+offset;
+			img.style.position="absolute";
+			img.style.top=top+"px";
+			img.style.left=left+"px";
+			main.appendChild(img);
+			if(tile.building=="yes"){
+				
+				var offset=tileHeight*0.5;
+				var img=document.createElement("img");
+				img.src="building.png";
+				var x=tileWidth/2 - img.naturalWidth/2;
+				var y=offset;
+				img.style.position="absolute";
+				img.style.top=top+y+"px";
+				img.style.left=left+x+"px";
+				main.appendChild(img);
+			}
+			
+		}
+	}
+}
+
+
+
+</script>
+</head>
+<body style="background:black" onload="init()">
+
+	<div id="main"  style="position:absolute;left:2%;top:2%;float:left"></div>
+	
+	
+</body>
+</html>

@@ -1,0 +1,124 @@
+<html><head>
+<style>
+
+</style>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+
+<script type="text/javascript">
+"use strict";
+//constants
+var tileWidth=64;
+var tileHeight=74;
+var map=[];
+var main;//the element containing the grid
+//array of offsets that are adjacent to the hex
+function get_adjacency(x,y){
+	//east clockwise to northeast, even/odd rows
+	var neighbours=[[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
+				[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]];
+	return neighbours[y%2];
+}
+
+function generateHexArray(){
+	var c = tileWidth/(2*Math.sqrt(3));
+	var hexs = [];
+	var x_squares = 10;
+	var y_squares = 15;
+	var array_i = 0 
+	for (var x = 0; x < x_squares; x++) {
+		for (var y = 0; y < y_squares; y++){
+			var hex = [[tileWidth*(x+.5),tileHeight*y], [tileWidth*(x+1),tileHeight*y+c],
+			[tileWidth*(x+1), tileHeight*(y+1)-c], [tileWidth*(x+.5),tileHeight*(y+1)],
+			[tileWidth*x,tileHeight*(y+1)-c], [tileWidth*x,tileHeight*y+c]];
+			hexs[array_i] = hex;
+			array_i ++;
+		}
+	}
+	return hexs;
+}
+
+function areaTags(){
+	var hexs = generateHexArray();
+	var map = '<img src="black.png" width="640" height="480" usemap="#blackmap">'
+	map += '<map name="backmap">';
+	for (var i=0; i<hexs.length; i++) {
+		var coords = 'coords="'
+		for (var j =0; j<hexs[i].length;j++){
+			coords += hexs[i][j][0] + ",";
+			coords += hexs[i][j][1] + ",";
+		}
+		coords = coords.substring(0,coords.length-2) + '"';
+		console.log(coords);
+		map += '<area shape="poly"' + coords + '>';
+	}
+	return map
+}
+
+function generateMap(){
+	var dim={x:0,y:0};
+	var seed=71;
+	
+	
+	
+	for(var i=0;i<dim.x;i++){
+		map[i]=[];
+		for(var j=0;j<dim.y;j++){
+			
+			var tile=new MapTile((Math.random()>0.8)?"grass":"dirt",null);
+			map[i][j]=tile;
+		}
+	}
+}
+function MapTile(terrain,element){
+	this.terrain=terrain;
+	this.element=element;
+	//this.building="yes";
+}
+function init(){
+	main=document.getElementById("main");
+	generateMap();
+	drawMap();
+}
+function drawMap(){
+	for(var i=0;i<map.length;i++){
+		for(var j=0;j<map[i].length;j++){
+			var tile=map[i][j];
+			var img=document.createElement("img");
+			img.src=tile.terrain+".png";
+			var offset=(j%2==0)?0:tileWidth/2;//offset for odd rows
+			var topInterv=tileHeight - (tileWidth/2) * Math.tan(Math.PI/6);
+			var leftInterv=tileWidth;
+			var top=j*topInterv;
+			var left=i*leftInterv+offset;
+			img.style.position="absolute";
+			img.style.top=top+"px";
+			img.style.left=left+"px";
+			main.appendChild(img);
+			if(tile.building=="yes"){
+				
+				var offset=tileHeight*0.5;
+				var img=document.createElement("img");
+				img.src="building.png";
+				var x=tileWidth/2 - img.naturalWidth/2;
+				var y=offset;
+				img.style.position="absolute";
+				img.style.top=top+y+"px";
+				img.style.left=left+x+"px";
+				main.appendChild(img);
+			}
+			
+		}
+	}
+}
+
+
+
+</script>
+</head>
+<body style="background:black" onload="init()">
+
+	<div id="main" style="position:absolute;left:2%;top:2%;float:left"><img src="black.png" width="640" height="480" usemap="#blackmap"><map name="backmap"><area shape="poly" coords="32,0,64,18.475208614068027,64,55.52479138593198,32,74,0,55.52479138593198,0,18.47520861406802" href="www.google.com"></map></div>
+	
+	
+
+</body></html>

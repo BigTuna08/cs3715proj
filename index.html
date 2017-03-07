@@ -2,7 +2,9 @@
 <html>
 <head>
 <style>
-
+.point-through {
+	pointer-events:None;
+}
 </style>
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 
@@ -11,6 +13,8 @@
 //constants
 var tileWidth=64;
 var tileHeight=74;
+var x_squares = 10;
+var y_squares = 15;
 var map=[];
 var main;//the element containing the grid
 //array of offsets that are adjacent to the hex
@@ -21,11 +25,55 @@ function get_adjacency(x,y){
 	return neighbours[y%2];
 }
 
+function generateHexArray(){
+	var c = tileWidth/(2*Math.sqrt(3));
+	var hexs = [];
+	var array_i = 0 
+
+	for (var y = 0; y < y_squares; y++) {
+		for (var x = 0; x < x_squares; x++){
+			var y_off = 0;
+			if (y%1==1) {
+				y_off=tileWidth/2
+			};
+			var hex = [[tileWidth*(x+.5),tileHeight*(y+y_off)], [tileWidth*(x+1),tileHeight*(y+y_off)+c],
+			[tileWidth*(x+1), tileHeight*((y+y_off)+1)-c], [tileWidth*(x+.5),tileHeight*((y+y_off)+1)],
+			[tileWidth*x,tileHeight*((y+y_off)+1)-c], [tileWidth*x,tileHeight*(y+y_off)+c]];
+
+			hexs[array_i] = hex;
+			array_i ++;
+		}
+	}
+	return hexs;
+}
+
+function do_something(i) {
+	var y = Math.floor(i/x_squares);
+	var x = i % x_squares
+	console.log("x=" + x + " y= " + y + " i=" + i);
+	var aTile = map[x][y];
+}
+
+function areaTags(){
+	var hexs = generateHexArray();
+	var map = '<img src="black.png" width="1000" height="1000" usemap="#blackmap">'
+	map += '<map name="blackmap">';
+	for (var i=0; i<hexs.length; i++) {
+		var coords = 'coords="'
+		for (var j =0; j<hexs[i].length;j++){
+			coords += hexs[i][j][0] + ",";
+			coords += hexs[i][j][1] + ",";
+		}
+		coords = coords.substring(0,coords.length-2) + '"';
+		console.log(coords);
+		map += '<area shape="poly"' + coords +  'onclick=do_something('+ i + ')>';
+	}
+	return map
+}
+
 function generateMap(){
-	var dim={x:10,y:15};
+	var dim={x:x_squares,y:y_squares};
 	var seed=71;
-	
-	
 	
 	for(var i=0;i<dim.x;i++){
 		map[i]=[];
@@ -43,14 +91,17 @@ function MapTile(terrain,element){
 }
 function init(){
 	main=document.getElementById("main");
+	main.innerHTML = areaTags();
 	generateMap();
 	drawMap();
+	
 }
 function drawMap(){
 	for(var i=0;i<map.length;i++){
 		for(var j=0;j<map[i].length;j++){
 			var tile=map[i][j];
 			var img=document.createElement("img");
+			img.className = "point-through";
 			img.src=tile.terrain+".png";
 			var offset=(j%2==0)?0:tileWidth/2;//offset for odd rows
 			var topInterv=tileHeight - (tileWidth/2) * Math.tan(Math.PI/6);
@@ -76,6 +127,7 @@ function drawMap(){
 			
 		}
 	}
+
 }
 
 

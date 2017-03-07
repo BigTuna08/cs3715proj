@@ -32,14 +32,23 @@ function generateHexArray(){
 
 	for (var y = 0; y < y_squares; y++) {
 		for (var x = 0; x < x_squares; x++){
-			var y_off = 0;
-			if (y%1==1) {
-				y_off=tileWidth/2
-			};
-			var hex = [[tileWidth*(x+.5),tileHeight*(y+y_off)], [tileWidth*(x+1),tileHeight*(y+y_off)+c],
-			[tileWidth*(x+1), tileHeight*((y+y_off)+1)-c], [tileWidth*(x+.5),tileHeight*((y+y_off)+1)],
-			[tileWidth*x,tileHeight*((y+y_off)+1)-c], [tileWidth*x,tileHeight*(y+y_off)+c]];
-
+			var x_off = 0;
+			
+			// var hex = [[tileWidth*(x+x_off+.5),(tileHeight-c)*y], [tileWidth*(x+x_off+1),tileHeight*y],
+			// [tileWidth*(x+x_off+1), (tileHeight-c)*(y+1)], [tileWidth*(x+x_off+.5),tileHeight*(y+1)],
+			// [tileWidth*(x+x_off),tileHeight*(y+1)-c], [tileWidth*(x+x_off),tileHeight*y+c]];
+			var hex = []
+			var top_left = [x*tileWidth,y*(tileHeight-c)];
+			if (y%2==1) {//y is odd
+				top_left = [(x+.5)*tileWidth,y*(tileHeight-c)];
+			}
+			console.log('top left: ' + top_left);
+			var mid = [top_left[0]+tileWidth/2,top_left[1]+tileHeight/2];
+			for (var k = 0; k <7; k++){
+				
+				hex[k] = [tileHeight/2*Math.cos(Math.PI/2+k*Math.PI/3)+mid[0],tileHeight/-2*Math.sin(Math.PI/2+k*Math.PI/3)+mid[1] ];
+			}
+			
 			hexs[array_i] = hex;
 			array_i ++;
 		}
@@ -104,7 +113,7 @@ function drawMap(){
 			img.className = "point-through";
 			img.src=tile.terrain+".png";
 			var offset=(j%2==0)?0:tileWidth/2;//offset for odd rows
-			var topInterv=tileHeight - (tileWidth/2) * Math.tan(Math.PI/6);
+			var topInterv=tileHeight - (tileWidth/2) / Math.sqrt(3);
 			var leftInterv=tileWidth;
 			var top=j*topInterv;
 			var left=i*leftInterv+offset;

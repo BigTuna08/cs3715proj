@@ -1,0 +1,6 @@
+.point-through {
+	pointer-events:None;
+}
+body{
+	background:grey;
+}

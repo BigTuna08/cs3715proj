@@ -4,7 +4,7 @@ var game;//persistent game state
 //initialise game data
 function init(){
 	game={
-		map:{x:10,y:10,tiles:null},
+		map:{x:4,y:4,tiles:null},
 		player:[],
 		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},ext:".png",grass:"grass",dirt:"dirt"},
 		gfx:{tileDim:[64,74],grid:id("main")},
@@ -52,19 +52,22 @@ function drawMap(){
 			var shiftToMid=function(coord){
 				return add(mid,coord);
 			}
-			var coords=range(6).scale(Math.PI/3)
+			var coords=range(7).scale(Math.PI/3)
 				.addScalar(Math.PI/2)
 				.map(cmplxExp)
 				.map(function(coord){return coord.scale(tileHeight/2);})
 				.map(shiftToMid)
 				.squish();
 			areaTag.coords=String(coords);
-			function Handler(x,y){
+			function Handler(x,y,img,z){
 				return function(event){
+					img.style.filter="brightness("+z+")";
 					print([x,y]);
 				}
 			}
-			areaTag.onclick=Handler(x,y);
+			
+			areaTag.onmouseenter=Handler(x,y,img,1.5);
+			areaTag.onmouseleave=Handler(x,y,img,1);
 			imageMap.appendChild(areaTag);
 		})
 	})

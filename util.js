@@ -1,6 +1,10 @@
 "use strict";
 //everything is nondestructive unless noted
 
+function pick(i,t){
+	return Math.floor(Math.random()*(t-i)+i);
+}
+
 //add two arrays
 function add(a,b){
 	return a.map((val,i)=>{return val+b[i]});

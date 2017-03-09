@@ -5,7 +5,7 @@ var game;//persistent game state
 function init(){
 	game={
 		map:{x:4,y:4,tiles:null},
-		player:{player1:{color:"4"},player2:{color:"6"}},
+		player:{player1:{color:"18"},player2:{color:"0"}},
 		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},ext:".png",grass:"grass",dirt:"dirt"},
 		building:{path:(name)=>{return "img/building/"+name+".png"},wall:"wall",city:"city"},
 		gfx:{tileDim:[64,74],grid:id("main")},
@@ -33,10 +33,12 @@ function populateMap(){
 	game.map.tiles.forEach((row,y)=>{
 		row.forEach((tile,x)=>{
 			tile.building=game.building[(Math.random()>0.5)?"city":"wall"];
-			print(game.player["player"+((Math.random()>0.5)?"1":"2")]);
-			print(game.player['player1'])
 			tile.owner=game.player["player"+((Math.random()>0.5)?"1":"2")];
-			print(tile);
+			tile.force=pick(0,20);
+			if(tile.building=="city"){
+				tile.buildingData={pop:pick(5,10),available:pick(5,10)};
+			}
+			
 		})
 	})
 }
@@ -54,7 +56,6 @@ function drawMap(){
 	
 	game.map.tiles.forEach((row,y)=>{
 		row.forEach((tile,x)=>{
-			//print(tile);
 			var container=document.createElement('div');
 			
 			var img=document.createElement("img");
@@ -78,16 +79,47 @@ function drawMap(){
 			container.className="point-through";
 			game.gfx.grid.appendChild(container);
 			
-			var building=document.createElement('img');
-			building.style.position="absolute";
-			building.className="point-through";
-			building.style.zIndex="10";
-			print(game.terrain.path(tile.building));
-			building.src=game.building.path(tile.building);
+			if(tile.building!=""){
+				var building=document.createElement('img');
+				building.style.position="absolute";
+				building.className="point-through";
+				building.style.zIndex="10";
+				building.src=game.building.path(tile.building);
+				
+				building.style.filter="hue-rotate("+tile.owner.color+"0deg)";
+				container.appendChild(building);
+				
+				
+				if(tile.building=="city"){
+					var popCount=document.createElement('div');
+					var textNode=document.createTextNode(tile.buildingData.available+"/"+tile.buildingData.pop);
+					popCount.style.position="absolute";
+					popCount.style.width=game.gfx.tileDim[0]+"px";
+					popCount.style.top="35px";
+					popCount.style.textAlign="center";
+					popCount.style.color="#FFFF00";
+					popCount.style.zIndex="20";
+					popCount.style.textShadow="1px 1px black";
+					popCount.appendChild(textNode);
+					container.appendChild(popCount);
+						
+				}
+			}
+			if(tile.force!=0){
+				var forceCount=document.createElement('div');
+				var textNode=document.createTextNode(tile.force);
+				forceCount.style.position="absolute";
+				forceCount.style.width=game.gfx.tileDim[0]+"px";
+				forceCount.style.top="10px";
+				forceCount.style.textAlign="center";
+				forceCount.style.color="white";
+				forceCount.style.zIndex="20";
+				forceCount.style.textShadow="1px 1px black";
+				forceCount.appendChild(textNode);
+				container.appendChild(forceCount);
+			}
 			
-			building.style.filter="hue-rotate("+tile.owner.color+"0deg)";
-			print(building.style.filter)
-			container.appendChild(building);
+			
 			
 			var areaTag=document.createElement('area');
 			areaTag.shape="poly";
@@ -106,7 +138,6 @@ function drawMap(){
 				return function(event){
 					img.style.filter="brightness("+z+") hue-rotate(180deg)";
 					
-					print([x,y]);
 				}
 			}
 			

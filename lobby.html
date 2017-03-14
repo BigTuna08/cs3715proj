@@ -5,52 +5,72 @@
       body {
         background-color: orange;
         text-align: center;
+        padding: 20px;
       }
       h1 {
         width: 550px;
         text-align: center;
       }
       label {
-        width: 340px;
-        //float: left;
+        width: 260px;
+        float: left;
         padding: 5px;
       }
       label input {
         width: 150px;
-        //float: right;
+        float: right;
         
       }
       table {
+        margin: auto;
         border: 1px solid grey;
         padding: 10px;
         text-align: center;
       }
+      form {
+        width: 300px;
+      }
       .sub-button {
-        
-        
+        float: none;
+        width: 280px;
+        height: 25px;
+        font-size: 1.25em;
+      }
+
+      .spacer {
+        clear:both;
+        height: 100px;
       }
     </style>
+
 </head>
 <body>
-  <table align="center">
-    <tr>
-       <td><h1>Cheese Wars</h1><td>
-    </tr>
-    <tr>
-       <td><h3>Enter your user name and password</h3><td>
-    </tr>
-    <tr><td>
+
+  <div align="center" style="border:1px solid black;overflow:auto;">
+    <div>
+       <h1>Better Wars</h1>
+    </div>
+    <div>
+       <h3>Enter your user name and password</h3>
+    </div>
+    <div>
        <form id="f1" action="index.html" method="POST"> 
           <label>User Name: <input type="text" name="user_id"></label>
           <br>
-          <label>Password:<input type="password" name="pass"></label>
-          <br>
-        <label><input type="submit" class="sub-button" value="Enter CheeseWorld"></label>
+          <div style="height:25px"> </div>
+          
+        <label><input type="submit" class="sub-button" value="Enter BetterWorld"></label>
+        <br>
+        <div style="height:25px"> </div>
        </form>
-    </td></tr>
-    </table>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div>
     <h3>Champions list</h3>
     <h4>#1. Big Tuna</h4>
     <h4>#2. No one even close</h4>
+  </div>
 </body>
 </html>
+

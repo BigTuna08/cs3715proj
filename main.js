@@ -277,6 +277,7 @@ function handleClick(tileRef){
 		container.style.height="10px";
 		container.style.fontSize="0.8em";
 		indicator.style.zIndex="-2";
+		container.zIndex="50";
 		container.appendChild(indicator);
 		container.className="moveInd";
 		var tn=document.createTextNode(force);

@@ -4,10 +4,13 @@
 
 <script>
 function init(){
-	var main=document.getElementById("main");
-	main.querySelector(".A").textContent="hi";
-
-
+	var xhr=new XMLHttpRequest();
+	xhr.onreadystatechange=function(){
+		console.log(xhr.response);
+	}
+	xhr.open("POST","lobby_helper.php",true);
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	
 }
 </script>
 </head>

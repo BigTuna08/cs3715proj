@@ -1,0 +1,102 @@
+<?php
+include('dbconnect.php');
+$conn=getConnect();
+
+$host=false;//you don't get to set map parameters
+if(!isset($_GET['id'])){
+	$host=true;//you get to set map parameters
+	$query="SELECT game_counter FROM `global`";
+	$game_counter=$conn->query($query)->fetch_array()['game_counter']+1;
+	
+	$query="UPDATE `global` SET game_counter=game_counter+1";
+	$conn->query($query) or die($conn->error);;
+	
+	//register lobby
+	$query="INSERT INTO `lobby` 
+		(id,name,players,param) VALUES 
+		($game_counter,'game_$game_counter',0,'')";
+	$conn->query($query) or die($conn->error);
+	//create lobby table
+	$id=$game_counter;
+	
+	$query="CREATE TABLE lobby_$id (player INT,ready BOOLEAN,changed BOOLEAN)";
+	$conn->query($query) or die($conn->error);
+}else{
+	$id=$_GET['id'];
+}
+//add player who requested this page
+$query="SELECT players FROM `lobby` WHERE id=$id";
+
+//set player number
+$player=$conn->query($query)->fetch_array()['players'];
+
+//increment player count
+$query="UPDATE `lobby` SET players=players+1 WHERE id=$id";
+$conn->query($query)or die($conn->error);;;;
+
+//insert me into lobby
+$query="INSERT INTO `lobby_$id` (player,ready,changed)
+	VALUES ($player,FALSE,FALSE)";
+$conn->query($query)or die($conn->error);;
+
+//set changed bit
+$query="UPDATE `lobby_$id` SET changed=TRUE";
+$conn->query($query)or die($conn->error);;
+
+
+?>
+<!doctype html>
+<html>
+<head>
+<script>
+//globals
+var lobby_id=<?PHP echo $id?>;
+var player=<?PHP echo $player?>;
+
+function redisplay(info){
+	//console.log(info);
+}
+
+function getInfo(){
+	var xhr=new XMLHttpRequest();
+	xhr.onreadystatechange=function(){
+		console.log("Start:"+xhr.response+"ENd");
+		if(xhr.response==="nochange")return;
+		else{
+			//console.log(xhr.response);
+			//var info=JSON.parse(xhr.response);
+			
+		}
+		
+	}
+	xhr.open("POST","lobby_helper.php");
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xhr.send("lobby="+lobby_id+"&player="+player);
+	
+	//call lobby_helper to get updated info
+	//display updated info
+	//if allready
+	//	//	redirect page to game.php with js window.location.replace ?lob=$lobbyname
+		//	game.php: php will put lobby info in js variable to be processed
+}
+function init(){
+	//getInfo();
+	
+	setInterval(getInfo,3000);
+	
+}
+
+</script>
+<title>LOBBY <?PHP echo '#'.$id?></title>
+</head>
+<body onload="init()">
+<h1>lobby</h1>
+<?PHP if($host){?>	
+	<button>IMA HOST</button>
+<?PHP }?>
+<ul id="players">
+
+</ul>
+<button>READY</button>
+</body>
+</html>

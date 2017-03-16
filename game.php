@@ -1,8 +1,27 @@
+<?PHP
+include('dbconnect.php');
+$conn=getConnect();
+
+$id=$_GET['id'];
+$player=$_GET['player']'
+
+//get game data
+$query="SELECT * FROM lobby WHERE id=$id";
+$lobbyData=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+
+//maybe don't use this
+$query="SELECT * FROM lobby_$id WHERE id=$id";
+?>
 <!doctype html>
 <html>
 <head>
+	
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<link rel="stylesheet" type="text/css" href="style.css">
+<script type="text/javascript"><?PHP
+echo "var lobbyData=".json_encode($lobbyData).';';
+echo "var playerNum=".player.";";
+?></script>
 <script type="text/javascript" src="util.js"></script>
 <script type="text/javascript" src="gameObj.js"></script>
 <script type="text/javascript" src="main.js"></script>

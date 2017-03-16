@@ -1,6 +1,6 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
-
+print(lobbyData);
 //initialise game data
 function init(){
 	
@@ -13,12 +13,14 @@ function init(){
 		players:[],
 		player:0};
 
-	//TODO initialize things from input lobby
-	//
-	game.players=[{name:'player1',orders:[],build:[],raze:[]},{name:'player2',orders:[]}];
-	game.player=0;
+	game.player=playerNum;
+	for(var i=0;i<lobbyData.players;i++){
+		players.append({name:"player"+i,orders:[],build:[],raze:[]})
+	}
+
+	game.players=game.players.map((element,index)=>{
+		element.colour=index*360/game.players.length;return element});
 	
-	game.players=game.players.map((element,index)=>{element.colour=index*360/game.players.length;return element});
 	game.map.tiles=generateMap();
 	populateMap();
 	drawMap();

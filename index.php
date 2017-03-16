@@ -22,9 +22,11 @@ $result=$conn->query($query);
 while($row=$result->fetch_array()){
 	$name=$row['name'];
 	$id=$row['id'];
+	$players=$row['players'];
 	echo 
 		"<li>
-		<a href=\"lobby.php?id=$id\">$name</a>
+		<a href=\"lobby.php?id=$id\">$name with $players players
+		</a>
 		</li>";
 }
 ?>

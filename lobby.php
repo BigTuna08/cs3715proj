@@ -19,7 +19,8 @@ if(!isset($_GET['id'])){
 	//create lobby table
 	$id=$game_counter;
 	
-	$query="CREATE TABLE lobby_$id (player INT,ready BOOLEAN,changed BOOLEAN)";
+	$query="CREATE TABLE lobby_$id 
+		(player INT,ready BOOLEAN,changed BOOLEAN,move TEXT)";
 	$conn->query($query) or die($conn->error);
 }else{
 	$id=$_GET['id'];
@@ -48,42 +49,65 @@ $conn->query($query)or die($conn->error);;
 <!doctype html>
 <html>
 <head>
+<script type="text/javascript" src="util.js"></script>
+
 <script>
 //globals
 var lobby_id=<?PHP echo $id?>;
 var player=<?PHP echo $player?>;
 
+
 function redisplay(info){
-	//console.log(info);
+	//clear display
+	var ulist=id("players");
+	for(var i=0;i<ulist.children.length;i++){
+		ulist.removeChild(ulist.children[i]);
+	}
+	var waiting=false;//do we need to wait for the game to start
+	info.players.forEach((e)=>{
+		print("adding player"+e.player);
+		var li=document.createElement('li');
+		li.style.background=(e.ready==1)?"green":"";
+		if(e.ready==0)waiting=true;
+		li.textContent="player "+e.player;
+		ulist.appendChild(li);
+	});
+	if(!waiting){
+		window.location.replace("game.php?id="+lobby_id+"&player="+player);
+	}
 }
+
+
 
 function getInfo(){
 	var xhr=new XMLHttpRequest();
 	xhr.onreadystatechange=function(){
-		console.log("Start:"+xhr.response+"ENd");
-		if(xhr.response==="nochange")return;
-		else{
-			//console.log(xhr.response);
-			//var info=JSON.parse(xhr.response);
-			
+		//console.log(xhr.response);
+		if(xhr.readyState==4){	
+			if(xhr.response==="nochange")return;
+			else if(xhr.responseText!=""){
+				var info=JSON.parse(xhr.responseText);
+				redisplay(info);
+			}
 		}
-		
 	}
 	xhr.open("POST","lobby_helper.php");
 	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xhr.send("lobby="+lobby_id+"&player="+player);
 	
-	//call lobby_helper to get updated info
-	//display updated info
 	//if allready
 	//	//	redirect page to game.php with js window.location.replace ?lob=$lobbyname
 		//	game.php: php will put lobby info in js variable to be processed
 }
 function init(){
-	//getInfo();
-	
+	getInfo();
 	setInterval(getInfo,3000);
-	
+}
+function sendRequest(action){
+	var xhr=new XMLHttpRequest();
+	xhr.open("POST","lobby_helper.php");
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xhr.send("lobby="+lobby_id+"&player="+player+"&"+action);
 }
 
 </script>
@@ -97,6 +121,6 @@ function init(){
 <ul id="players">
 
 </ul>
-<button>READY</button>
+<button onclick="sendRequest('ready=true')">READY</button>
 </body>
 </html>

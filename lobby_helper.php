@@ -4,13 +4,17 @@ $conn=getConnect();
 
 $id=$_POST['lobby'];
 $player=$_POST['player'];
-if(isset($_POST['action'])){
-	//new params
-	//I'm ready
+if(isset($_POST['ready'])){
+	//make player ready
+	$query="UPDATE lobby_$id SET ready=TRUE WHERE player=$player";
+	$conn->query($query);
 	
-	
+	//notify others
+	$query="UPDATE lobby_$id SET changed=TRUE";
+	$conn->query($query);
+	return;
+
 }
-//$action=$_POST['action'];
 
 
 //check if anything has been changed
@@ -21,8 +25,7 @@ $changed=$conn->query($query)->fetch_array()['changed'];
 $query="UPDATE lobby_$id SET changed=FALSE WHERE player=$player";
 $conn->query($query) or die($conn->error);
 
-$changed=true;
-if(!$changed){
+if($changed==0){
 	echo "nochange";
 	return;
 }else{
@@ -36,4 +39,6 @@ if(!$changed){
 	echo $ret;
 }
 	
+	
+
 	

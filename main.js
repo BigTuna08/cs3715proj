@@ -1,8 +1,6 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
 
-
-
 //initialise game data
 function init(){
 	

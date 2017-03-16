@@ -3,8 +3,6 @@ var game;//persistent game state
 
 
 
-
-
 //initialise game data
 function init(){
 	
@@ -94,13 +92,14 @@ function drawMap(){
 			container.className="point-through";
 			game.gfx.grid.appendChild(container);
 			
+		
 			if(tile.building!=""){
 				var building=document.createElement('img');
 				building.style.position="absolute";
 				building.className="point-through";
 				building.style.zIndex="10";
 				building.src=game.building.path(tile.building);
-				building.style.filter="hue-rotate("+tile.owner.color+"deg)";
+				building.style.filter="hue-rotate("+game.players[tile.owner].colour+"deg)";
 				container.appendChild(building);
 				
 				
@@ -119,6 +118,7 @@ function drawMap(){
 						
 				}
 			}
+			
 			if(tile.force!=0){
 				var forceCount=document.createElement('div');
 				var textNode=document.createTextNode(tile.force);
@@ -131,6 +131,15 @@ function drawMap(){
 				forceCount.style.textShadow="1px 1px black";
 				forceCount.appendChild(textNode);
 				container.appendChild(forceCount);
+			}
+			
+			if(tile.owner!=null){
+				var hl=document.createElement('img');
+				hl.style.position="absolute";
+				hl.style.filter="hue-rotate("+game.players[tile.owner].colour+"deg)"
+				//hl.style.zIndex="";
+				hl.src="img/highlight.png";
+				container.appendChild(hl);
 			}
 			
 			
@@ -186,11 +195,12 @@ function handleClick(tileRef){
 		print("dest "+tileRef);
 		var adjacent=false;
 		var dir=0;
-		get_adjacency(game.input.selected).forEach(
+		get_adjacency(game.input.selected).some(
 			(e,i)=>{
 				if(e.isEqual(tileRef)){
 					adjacent=true;
 					dir=i;
+					return true;
 				}});
 		print(dir);
 		if(!adjacent){
@@ -213,6 +223,9 @@ function handleClick(tileRef){
 			force=tile.uncommitedForce;
 			force.uncommitedForce=0;
 		}
+		
+		
+		
 		game.players[game.player].orders.push(new mvOrder(game.input.selected,tileRef,force));
 		//TODO add html
 		unhighlight(game.input.selected);

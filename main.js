@@ -17,7 +17,7 @@ function init(){
 
 	//TODO initialize things from input lobby
 	//
-	game.players=[{name:'player1',orders:[]},{name:'player2',orders:[]}];
+	game.players=[{name:'player1',orders:[],build:[],raze:[]},{name:'player2',orders:[]}];
 	game.player=0;
 	
 	game.players=game.players.map((element,index)=>{element.colour=index*360/game.players.length;return element});
@@ -110,9 +110,8 @@ function drawMap(){
 					popCount.style.width=game.gfx.tileDim[0]+"px";
 					popCount.style.top="35px";
 					popCount.style.textAlign="center";
-					popCount.style.color="#FFFF00";
-					popCount.style.zIndex="20";
-					popCount.style.textShadow="1px 1px black";
+			
+					popCount.className="citycount";
 					popCount.appendChild(textNode);
 					container.appendChild(popCount);
 						
@@ -121,14 +120,16 @@ function drawMap(){
 			
 			if(tile.force!=0){
 				var forceCount=document.createElement('div');
+				
 				var textNode=document.createTextNode(tile.force);
 				forceCount.style.position="absolute";
 				forceCount.style.width=game.gfx.tileDim[0]+"px";
 				forceCount.style.top="10px";
 				forceCount.style.textAlign="center";
-				forceCount.style.color="white";
+				/*forceCount.style.color="white";
 				forceCount.style.zIndex="20";
-				forceCount.style.textShadow="1px 1px black";
+				forceCount.style.textShadow="1px 1px black";*/
+				forceCount.className="fcount";
 				forceCount.appendChild(textNode);
 				container.appendChild(forceCount);
 			}
@@ -179,20 +180,25 @@ function drawMap(){
 
 
 function handleClick(tileRef){
-	
-	
-	if(game.input.selected==null){
-		print("adding filter, selecting source");
+	var dest=getTile(tileRef);
+	var destRef=tileRef;
+	if(game.input.selected==null){//select a source tile
+		if(dest.owner!=game.player){
+			print("can't select enemy tile");
+			return;
+		}
+		print("selecting a source tile");
 		game.input.selected=tileRef;
 		highlight(tileRef);
-	}else if(game.input.selected.isEqual(tileRef)){
-		print("removing filter, unselecting");
-		//unselect tile
+	}else if(game.input.selected.isEqual(tileRef)){//deselect source
+		print("deselecting");
 		unhighlight(tileRef);
 		game.input.selected=null;
-	}else {
-		print("source "+game.input.selected);
-		print("dest "+tileRef);
+	}else {//selected a dest tile
+		var source=getTile(game.input.selected);
+		var sourceRef=game.input.selected;
+		var orderArr=game.players[game.player].orders;
+		//determine adjacency
 		var adjacent=false;
 		var dir=0;
 		get_adjacency(game.input.selected).some(
@@ -202,36 +208,89 @@ function handleClick(tileRef){
 					dir=i;
 					return true;
 				}});
-		print(dir);
-		if(!adjacent){
-			print(game.input.selected);	
-			getTile(game.input.selected).container.style.filter="";
+
+		if(!adjacent){//tile is not adjacent so move selection
+			print("moveing selection");	
+			source.container.style.filter="";
 			game.input.selected=tileRef;
 			highlight(tileRef);
 			return;
 		}
 		
-		var force=Number(prompt("Force","0"));
-		//TODO lookup existing moves and simplify automatically
-		if(force==0){
-			unhighlight(game.input.selected);
-			game.input.selected=null;
+		print("calculating move");
+		var force=Number(prompt("Force",0));
+		print("asked to move "+force+" units");
 		
-			return;
-		}else if(force>tile.uncommitedForce){
-			//assume they want everything
-			force=tile.uncommitedForce;
-			force.uncommitedForce=0;
+		//lookup conflicting moves
+		var simulIndex=-1;//a move in the same direction
+		var counterIndex=-1;//a move in the opposite direction
+		var existingOrder=orderArr.find(
+			(e,i)=>{
+				print("checking "+e);
+				if(e.source.isEqual(game.input.selected) && e.dest.isEqual(tileRef)){
+					simulIndex=i;
+					return true;
+				}else if(e.dest.isEqual(game.input.selected) && e.source.isEqual(tileRef)){
+					counterIndex=i;
+					return true;
+				}
+			});
+		if(simulIndex!=-1){
+			print("move exists in this direction");
+			print(orderArr[simulIndex]);
+			
+			//Delete existing move
+			var cont=orderArr[simulIndex].container;
+			source.container.removeChild(cont);
+			returnForce(source,orderArr[simulIndex].force);
+			orderArr.splice(simulIndex,1);
+			
+		}else if(counterIndex!=-1){
+			print("move exists in opposite direction");
+			//Delete existing move
+			var cont=orderArr[counterIndex].container;
+			dest.container.removeChild(cont);
+			returnForce(dest,orderArr[counterIndex].force);
+			orderArr.splice(counterIndex,1);
 		}
+		if(force==0){
+			//there should be no move in this direction now
+			return;
+		}
+		if(force>source.uncommitedForce){
+			force=source.uncommitedForce;
+		}
+		returnForce(source,-force);
 		
+		//CREATE GRAPHIC
+		var container=document.createElement('div');
+		var indicator=document.createElement("img");
+		indicator.style.position="absolute";
+		indicator.src=arrows[dir];
+		indicator.style.left="0px";
+		indicator.style.top="0px";
+		var pos=arrowPos[dir];
+		container.style.position="absolute";
+		container.className="fcount";
+		container.style.color="black";
+		container.style.left=pos[0]+"px";
+		container.style.top=pos[1]+"px";
+		container.style.width="10px";
+		container.style.height="10px";
+		container.style.fontSize="0.8em";
+		indicator.style.zIndex="-2";
+		container.appendChild(indicator);
+		container.className="moveInd";
+		var tn=document.createTextNode(force);
+		container.appendChild(indicator);
+		container.appendChild(tn);
+		source.container.appendChild(container);
+		//END CREATE GRAPHIC
 		
-		
-		game.players[game.player].orders.push(new mvOrder(game.input.selected,tileRef,force));
-		//TODO add html
+		orderArr.push(new mvOrder(sourceRef,tileRef,force,container));
 		unhighlight(game.input.selected);
 		game.input.selected=null;
-		
-		
+	
 	}
 	//local functions
 	function highlight(tileRef){
@@ -240,4 +299,21 @@ function handleClick(tileRef){
 	function unhighlight(tileRef){
 		getTile(tileRef).container.style.filter="";
 	}
+	
 }
+
+
+//return or deduct from commited force, does not destroy anything
+function returnForce(tile,x){
+	print(tile);
+	if(tile.uncommitedForce+x>tile.force){
+		print("something went wrong");
+	}
+	if(tile.uncommitedForce-x<0){
+		print("something went wrong");
+	}
+	var fcount=tile.container.querySelector(".fcount");
+	tile.uncommitedForce+=x;
+	fcount.textContent=tile.uncommitedForce;
+}
+	

@@ -4,3 +4,21 @@
 body{
 	background:grey;
 }
+.fcount{
+	color:#FFFFFF;
+	z-index:50;
+	text-shadow:2px 2px black;
+	
+}
+.moveInd{
+	color:#000000;
+	z-index:50;
+	text-shadow:1px 1px grey;
+}
+.citycount{
+	color:#FFFF00;
+	z-index:50;
+	text-shadow:2px 2px black;
+	
+	
+}

@@ -1,0 +1,26 @@
+TODO
+
+JAVASCRIPT main.js
+-raze button
+-build buttons
+-build/raze orders
+-finish button
+-ajax recieve opponent moves when server says they are ready
+-combine moves and compute next turn
+-redecorate map each turn
+-timer to autosubmit moves
+
+SERVER server.php
+-recieve submitted moves
+	-store in database (maybe make a table per game)
+-recieve polling from waiting players (who've submitted moves)
+	-if all moves recieved
+		-jsonify and send to players
+
+LOBBY lobby.php
+	-host chooses map: load from db or generate new
+	-once everyone joins, each player has the game loaded
+		-with initial conditions inserted in the page by php
+			-conditions: (dimensions,seed,players)
+			-if loaded a map: (the map, jsonified)
+	

@@ -1,19 +1,23 @@
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="style.css">
 <script type="text/javascript" src="util.js"></script>
 
 <script>
-console.log([1,2].isEqual([1,2]));
+function init(){
+	var main=document.getElementById("main");
+	main.querySelector(".A").textContent="hi";
+
+
+}
 </script>
 </head>
 
-<body>
+<body onload="init()">
 
-<div onclick="alert(5)">
-<div>
-<img src="img/terrain/grass.png">
+<div id="main">
+
+<div class="A"></div>
+
 </div>
-
 </body>
 </html>

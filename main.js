@@ -1,17 +1,28 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
 
+
+
+
+
 //initialise game data
 function init(){
+	
 	game={
+		input:{selected:null},
 		map:{x:4,y:4,tiles:null},
-		player:{player1:{color:"18"},player2:{color:"0"}},
-		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},ext:".png",grass:"grass",dirt:"dirt"},
+		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},grass:"grass",dirt:"dirt"},
 		building:{path:(name)=>{return "img/building/"+name+".png"},wall:"wall",city:"city"},
 		gfx:{tileDim:[64,74],grid:id("main")},
-		game:{}};
+		players:[],
+		player:0};
+
+	//TODO initialize things from input lobby
+	//
+	game.players=[{name:'player1',orders:[]},{name:'player2',orders:[]}];
+	game.player=0;
 	
-	//game.player=[player1:{},player2:{}];
+	game.players=game.players.map((element,index)=>{element.colour=index*360/game.players.length;return element});
 	game.map.tiles=generateMap();
 	populateMap();
 	drawMap();
@@ -32,16 +43,19 @@ function generateMap(){
 function populateMap(){
 	game.map.tiles.forEach((row,y)=>{
 		row.forEach((tile,x)=>{
+			
 			tile.building=game.building[(Math.random()>0.5)?"city":"wall"];
-			tile.owner=game.player["player"+((Math.random()>0.5)?"1":"2")];
+			tile.owner=(pick(0,game.players.length));
 			tile.force=pick(0,20);
+			tile.uncommitedForce=tile.force;
 			if(tile.building=="city"){
 				tile.buildingData={pop:pick(5,10),available:pick(5,10)};
 			}
-			
 		})
 	})
 }
+
+
 
 //create html from hex grid
 function drawMap(){
@@ -56,8 +70,9 @@ function drawMap(){
 	
 	game.map.tiles.forEach((row,y)=>{
 		row.forEach((tile,x)=>{
+		
 			var container=document.createElement('div');
-			
+			tile.container=container;
 			var img=document.createElement("img");
 			img.className = "point-through";
 			img.style.position="absolute";
@@ -85,8 +100,7 @@ function drawMap(){
 				building.className="point-through";
 				building.style.zIndex="10";
 				building.src=game.building.path(tile.building);
-				
-				building.style.filter="hue-rotate("+tile.owner.color+"0deg)";
+				building.style.filter="hue-rotate("+tile.owner.color+"deg)";
 				container.appendChild(building);
 				
 				
@@ -133,21 +147,84 @@ function drawMap(){
 				.map(function(coord){return coord.scale(tileHeight/2);})
 				.map(shiftToMid)
 				.squish();
+			
 			areaTag.coords=String(coords);
-			function Handler(x,y,img,z){
+			function Handler(tileRef){
 				return function(event){
-					img.style.filter="brightness("+z+") hue-rotate(180deg)";
+					handleClick(tileRef);
 					
 				}
 			}
 			
 			
-			areaTag.onmouseenter=Handler(x,y,img,1.5);
-			areaTag.onmouseleave=Handler(x,y,img,1);
-			
+			areaTag.onclick=Handler([x,y]);
+	
 			
 			imageMap.appendChild(areaTag);
 		})
 	})
 	
+}
+
+
+
+
+function handleClick(tileRef){
+	
+	
+	if(game.input.selected==null){
+		print("adding filter, selecting source");
+		game.input.selected=tileRef;
+		highlight(tileRef);
+	}else if(game.input.selected.isEqual(tileRef)){
+		print("removing filter, unselecting");
+		//unselect tile
+		unhighlight(tileRef);
+		game.input.selected=null;
+	}else {
+		print("source "+game.input.selected);
+		print("dest "+tileRef);
+		var adjacent=false;
+		var dir=0;
+		get_adjacency(game.input.selected).forEach(
+			(e,i)=>{
+				if(e.isEqual(tileRef)){
+					adjacent=true;
+					dir=i;
+				}});
+		print(dir);
+		if(!adjacent){
+			print(game.input.selected);	
+			getTile(game.input.selected).container.style.filter="";
+			game.input.selected=tileRef;
+			highlight(tileRef);
+			return;
+		}
+		
+		var force=Number(prompt("Force","0"));
+		//TODO lookup existing moves and simplify automatically
+		if(force==0){
+			unhighlight(game.input.selected);
+			game.input.selected=null;
+		
+			return;
+		}else if(force>tile.uncommitedForce){
+			//assume they want everything
+			force=tile.uncommitedForce;
+			force.uncommitedForce=0;
+		}
+		game.players[game.player].orders.push(new mvOrder(game.input.selected,tileRef,force));
+		//TODO add html
+		unhighlight(game.input.selected);
+		game.input.selected=null;
+		
+		
+	}
+	//local functions
+	function highlight(tileRef){
+		getTile(tileRef).container.style.filter="brightness(1.4)";
+	}
+	function unhighlight(tileRef){
+		getTile(tileRef).container.style.filter="";
+	}
 }

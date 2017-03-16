@@ -1,6 +1,8 @@
 "use strict";
 //everything is nondestructive unless noted
 
+
+//random integer between i and t
 function pick(i,t){
 	return Math.floor(Math.random()*(t-i)+i);
 }
@@ -8,6 +10,17 @@ function pick(i,t){
 //add two arrays
 function add(a,b){
 	return a.map((val,i)=>{return val+b[i]});
+}
+
+
+Array.prototype.isEqual=function(o){
+	if(this.length!=o.length)return false;
+	for(var i=0;i<this.length;i++){
+		if(this[i]!=o[i]){
+			return false;
+		}
+	}
+	return true;
 }
 
 //add scalar to each element of array
@@ -53,9 +66,14 @@ function id(id){
  */
 
 //get offset of coordinates of adjacent tiles
-function get_adjacency(x,y){
+function get_adjacency(tileRef){
 	//east clockwise to northeast, even/odd rows
 	var neighbours=[[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
 				[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]];
-	return neighbours[y%2];
+	return neighbours[tileRef[1]%2].map((e)=>{return add(e,tileRef)});
+}
+
+
+function getTile(tileRef){
+	return game.map.tiles[tileRef[1]][tileRef[0]];
 }

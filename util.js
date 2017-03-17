@@ -1,17 +1,31 @@
 "use strict";
+
+/**
+ * Misc
+ */
+
 //everything is nondestructive unless noted
 
-
-//random integer between i and t
-function pick(i,t){
-	return Math.floor(Math.random()*(t-i)+i);
+//PRNG with seed because Math.random() isn't deterministic
+function Prng(x){
+	var f=function(){
+		return (x=(x*1664525+1013904223)%4294967296)/4294967296;
+	}
+	f();f();f();f();f();f();f();f();
+	return f;
 }
+
+var prng=new Prng(prngSeed);
 
 //add two arrays
 function add(a,b){
 	return a.map((val,i)=>{return val+b[i]});
 }
 
+//random integer between i and t
+function pick(i,t){
+	return Math.floor(prng()*(t-i)+i);
+}
 
 Array.prototype.isEqual=function(o){
 	if(this.length!=o.length)return false;

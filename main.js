@@ -1,6 +1,7 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
-print(lobbyData);
+print(lobbyData);//data delivered by php when page loaded
+
 //initialise game data
 function init(){
 	
@@ -15,7 +16,7 @@ function init(){
 
 	game.player=playerNum;
 	for(var i=0;i<lobbyData.players;i++){
-		players.append({name:"player"+i,orders:[],build:[],raze:[]})
+		game.players.push({name:"player"+i,orders:[],build:[],raze:[]})
 	}
 
 	game.players=game.players.map((element,index)=>{

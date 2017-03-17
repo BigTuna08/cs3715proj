@@ -3,13 +3,12 @@ include('dbconnect.php');
 $conn=getConnect();
 
 $id=$_GET['id'];
-$player=$_GET['player']'
+$player=$_GET['player'];
 
 //get game data
 $query="SELECT * FROM lobby WHERE id=$id";
-$lobbyData=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+$lobbyData=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
 
-//maybe don't use this
 $query="SELECT * FROM lobby_$id WHERE id=$id";
 ?>
 <!doctype html>
@@ -20,8 +19,11 @@ $query="SELECT * FROM lobby_$id WHERE id=$id";
 	<link rel="stylesheet" type="text/css" href="style.css">
 <script type="text/javascript"><?PHP
 echo "var lobbyData=".json_encode($lobbyData).';';
-echo "var playerNum=".player.";";
-?></script>
+echo "var playerNum=".$player.";";
+echo "var prngSeed=4;";// https://xkcd.com/221/
+?>
+
+</script>
 <script type="text/javascript" src="util.js"></script>
 <script type="text/javascript" src="gameObj.js"></script>
 <script type="text/javascript" src="main.js"></script>

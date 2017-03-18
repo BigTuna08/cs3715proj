@@ -1,5 +1,25 @@
 "use strict";
 
+
+/**
+ * Net
+ *
+ */
+
+//one way message client to server
+function SendRequest(lobby_id,player){
+	var f=function(action){
+		var xhr=new XMLHttpRequest();
+		xhr.open("POST","index.php");
+		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhr.send("lobby_id="+lobby_id+"&playername="+player+"&"+action);
+	}
+	return f;
+}
+
+ 
+ 
+ 
 /**
  * Misc
  */

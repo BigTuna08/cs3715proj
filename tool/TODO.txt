@@ -1,24 +1,30 @@
-TODO
+TODO in decreasing importance
+- processing moves and updating map
+- turn timer both on client and server
+- saving the game to the db permanently
+- loading a saved game
 
 GAME LOGIC FLOW SKETCH
-timer end turn (visual only, automatically submits when done)
-manually click end turn
-	submit moves:
+timer end turn on client (visual only, automatically submits when done)
+manually click end turn//done
+	submit moves://done
 		SERVER
-		update individual player turn number (so turn=1 means stored moves were for turn 0)
-		store moves for player
+		update individual player turn number (so turn=1 means stored moves were for turn 0)//done
+		store moves for player//done
 		CLIENT
-		starts polling for other players moves
+		starts polling for other players moves//done
 			SERVER
-			server checks all player turn numbers are equal
+			server checks all player turn numbers are equal//done
 			if timer expired+seconds for autosubmit passed, set moves to none for absent players (probably closed browser)
 				and increment their turn counters
 			if all equal sends move set
-				and increments lobby turn
+				and increments lobby turn//done
+				and sets turnstarttime to current time
 			if not responds wait
 			CLIENT
 			if not waiting
-			recieves moveset
+			recieves moveset//done
+			recieves turnstarttime (because if they guess it'll be off by a few seconds depending on polling)
 			updates game map//99% of code here
 			if lose condition notify resignation
 				SERVER
@@ -27,32 +33,10 @@ manually click end turn
 				if only one player remains
 					delete lobby, unregister lobby, 
 			if win condition alert("u r winner")//no need to tell server they'll figure it out
-			sends map to server//duplicated by nnumber of players but that's ok
+			sends map to server//duplicated by nnumber of players but that's ok//done
 				SERVER
-				server stores map in lobby to be used for reconnecting players
+				server stores map in lobby to be used for reconnecting players//done
 
-
-
-JAVASCRIPT main.js
--build/raze orders
--ajax recieve opponent moves when server says they are ready
--combine moves and compute next turn
--redecorate map each turn
--timer to autosubmit moves
-
-SERVER server.php
--recieve submitted moves
-	-store in database (maybe make a table per game)
--recieve polling from waiting players (who've submitted moves)
-	-if all moves recieved
-		-jsonify and send to players
-
-LOBBY lobby.php
-	-host chooses map: load from db or generate new
-	-once everyone joins, each player has the game loaded
-		-with initial conditions inserted in the page by php
-			-conditions: (dimensions,seed,players)
-			-if loaded a map: (the map, jsonified)
 
 
 GRAPHICS:

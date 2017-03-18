@@ -20,8 +20,10 @@ $page_data=[];
 $playername='';
 if(isset($_GET['playername']))$playername=$_GET['playername'];
 if(isset($_POST['playername']))$playername=$_POST['playername'];
+cout("new connection from player:'$playername'");
 if(!isset($_POST['action'])){
 	if($playername!=''){//try to put the player where they belong
+		cout("player is lost, putting them where they belong");
 		$stmt=$conn->prepare("SELECT activity FROM player WHERE name=?");
 		$name=$playername;
 		$stmt->bind_param("s",$name);
@@ -49,11 +51,12 @@ if(!isset($_POST['action'])){
 			break;
 		}
 	}else{
+		cout("new player");
 		$page='login';
 	}
 }else{
+	cout("action: ".$_POST['action']);
 	switch($_POST['action']){
-		
 		case 'signup':
 			$name=$_POST['name'];
 			$stmt=$conn->prepare("SELECT id FROM player WHERE name=?");
@@ -61,14 +64,11 @@ if(!isset($_POST['action'])){
 			$stmt->execute();
 			$result=$stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 			if(count($result)==0){//name not taken, register and reload with name in url
-				
 				$stmt=$conn->prepare("INSERT INTO player (name) VALUES (?)");
 				$stmt->bind_param("s",$name);
 				$stmt->execute() or die($conn->error);
-				
 				header("Location: index.php?playername=$name");
 				return;
-			
 			}else{
 				$page='login';
 				$page_data['notification']='that name is taken';
@@ -81,12 +81,15 @@ if(!isset($_POST['action'])){
 			$stmt->execute();
 			$result=$stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 			if(count($result)==0){
+				cout("bad login");
 				$page='login';
 				$page_data['notification']='no player by that name';
 			}else{
+				cout("logging in");
 				header("Location: index.php?playername=$name");
 				return;
 			}
+		break;
 		case 'newlobby':
 			
 			$proposed_name=$_POST['name'];
@@ -98,7 +101,7 @@ if(!isset($_POST['action'])){
 				$params=['seed'=>123456,'dim'=>[4,4],'maptype'=>'random'];
 				$params=json_encode($params);
 				$params=$conn->real_escape_string($params);
-				echo $params;
+				
 				//register lobby
 				$query="INSERT INTO `lobby` (name,param,turn) VALUES ('$proposed_name','$params',0)";
 				$conn->query($query) or die($conn->error);
@@ -110,12 +113,11 @@ if(!isset($_POST['action'])){
 				$query="SELECT id FROM `lobby` WHERE name='$proposed_name'";
 				$result=$conn->query($query) or die($conn->error);
 				$id=$result->fetch_array()['id'];
-				echo 'got '.$id;
 				
 				$table_name='lobby_'.$id;
 				
 				//create lobby table
-				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,move TEXT,endturn BOOLEAN)";
+				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,moveset TEXT,turn INT)";
 				$conn->query($query) or die($conn->error);
 				
 				//remember that player is currently hosting (that way if they refresh nothing breaks)
@@ -125,8 +127,7 @@ if(!isset($_POST['action'])){
 				$stmt->execute();
 				
 				//insert player into lobby
-				$query="INSERT INTO $table_name (playername,ready,changed)VALUES('$playername',FALSE,TRUE)";
-				echo $query;
+				$query="INSERT INTO $table_name (playername,ready,changed,turn)VALUES('$playername',FALSE,TRUE,0)";
 				$conn->query($query) or die($conn->error);
 		
 				$page='lobby';
@@ -155,7 +156,7 @@ if(!isset($_POST['action'])){
 		
 			
 			//insert player into lobby
-			$query="INSERT INTO $table_name (playername,ready,changed) VALUES ('$playername',FALSE,TRUE)";
+			$query="INSERT INTO $table_name (playername,ready,changed,turn) VALUES ('$playername',FALSE,TRUE,0)";
 			echo $query;
 			$conn->query($query) or die($conn->error);
 			
@@ -201,6 +202,16 @@ if(!isset($_POST['action'])){
 			$table_name='lobby_'.$id;
 			$query="UPDATE $table_name SET ready=TRUE WHERE playername='$playername'";
 			$conn->query($query) or die($conn->error);
+			
+			$query="SELECT * FROM $table_name WHERE ready=FALSE";
+			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+			if(sizeof($result)==0){
+				//everyone is ready so start turn timer
+				$timestamp=date_timestamp_get(date_create());
+				$query="UPDATE lobby SET turntimerstart=$timestamp WHERE id=$id";
+				$conn->query($query) or die($conn->error);
+			}
+
 			//notify others
 			setNotifyBits($table_name);
 			return;
@@ -265,10 +276,91 @@ if(!isset($_POST['action'])){
 			echo json_encode($data);;
 			return;
 		break;
+		case 'notifyendturn':
+			$moveset=$_POST['moveset'];
+			$id=$_POST['lobby_id'];
+			$table_name='lobby_'.$id;
+			$query="UPDATE $table_name SET moveset='".
+				$conn->real_escape_string($moveset)."' ,
+				turn=turn+1 
+				WHERE playername='$playername'";
+			
+			$conn->query($query) or die($conn->error);
+			
+			
+			//TODO if all players notified, restart timer
+			
+		break;
+		case 'pollendturn':
+			
+			$id=$_POST['lobby_id'];
+			$table_name='lobby_'.$id;
+			$sendmoves=false;
+			cout("hi");	
+			//check what the next turn number is
+			$query="SELECT * FROM $table_name WHERE playername='$playername'";
+			cout($query);	
+			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
+			$wantedturn=$result['turn'];
+			
+			cout($wantedturn);
+			//check that everyone has the same turn number
+			$query="SELECT * FROM $table_name WHERE turn!=$wantedturn";
+			cout($query);	
+			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+			if(sizeof($result)==0){
+				//everyone is on the same page
+				$sendmoves=true;
+			}
+			cout("sendmoves: ".$sendmoves);
+			//todo send timestamp
+			if(!$sendmoves){
+				echo "wait";
+				return;
+			}else{
+				$query="SELECT * FROM $table_name";
+				//cout($query);	
+				$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+				
+				$ret=['players'=>$result,'lobby'=>[]];
+				cout(json_encode($ret));
+				echo json_encode($ret);
+			}
+				
+			//get current turn from lobby
+			//check time, is time expired
+			//if time not expired
+				//server checks all player turn numbers are equal to next turn
+				//if equal
+					//$newturn = true
+				//
+			//if timer expired
+				//force moves to zero and update turn numbers on all players
+				//newturn=true
+			//if newturn
+				// don't update lobby turn number, do restart lobby timer
+				//echo the move data
+			//
+				
+		break;
+		case 'uploadmap':
+			$mapdata=$_POST['mapdata'];
+			$id=$_POST['lobby_id'];
+			$table_name='lobby_'.$id;
+			
+			$query="SELECT turn FROM $table_name WHERE playername='$playername'";
+			$turn=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0]['turn'];
+			
+			
+			$query="UPDATE lobby SET turn=$turn, map='".$conn->real_escape_string($mapdata)."' WHERE id=$id";
+			$conn->query($query) or die($conn->error);
+			
+		break;
 		default:
 			$page='login';
 			$page_data['notification']='congratulations, you found a bug';
 		break;
+		
 	}
 }
 
@@ -328,7 +420,6 @@ if($page!="none"){
 			include('page/lobby.php');
 		break;
 		case 'game':
-		echo "hi";
 			include('page/game.php');
 		break;
 		case 'default':

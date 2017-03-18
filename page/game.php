@@ -19,9 +19,10 @@ $lobby_id=$page_data['lobby_id'];
 	<script type="text/javascript" src="js/main.js"></script>
 </head>
 <body style="margin:0" onload="init()">
-	<div id="main" style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">
+	<div style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">
 		<img style="position:absolute" src="" width="1000" height="1000" usemap="#backmap">
 		<div style="pointer-events:None;position:absolute;width:1000px;height:1000px;background:grey">
+		<div id="main"></div>
 	</div>
 	
 	<div style="padding:5px;position:fixed;bottom:0px;right:0px;width:500px;height:30px;background:red;border-radius:4px;border:2px solid orange">
@@ -32,7 +33,7 @@ $lobby_id=$page_data['lobby_id'];
 			<button onclick="orderBuild('wall')" class="blBtn"><b>WALL(2)</b></button>
 			<button onclick="orderBuild('camp')" class="blBtn"><b>CAMP(3)</b></button>
 		</div>
-		<button class="endBtn"><em>END TURN</em></button>
+		<button onclick="endTurn()" class="endBtn"><em>END TURN</em></button>
 	</div>
 </body>
 </html>

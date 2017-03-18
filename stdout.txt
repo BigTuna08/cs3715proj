@@ -1,0 +1,24 @@
+action: notifyendturn
+action: pollendturn
+hi
+SELECT * FROM lobby_1 WHERE playername='jj'
+10
+SELECT * FROM lobby_1 WHERE turn!=10
+sendmoves: 1
+{"players":[{"playername":"jj","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"10"},{"playername":"jo","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"10"}],"lobby":[]}
+new connection from player:'jo'
+action: pollendturn
+hi
+SELECT * FROM lobby_1 WHERE playername='jo'
+10
+SELECT * FROM lobby_1 WHERE turn!=10
+sendmoves: 1
+{"players":[{"playername":"jj","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"10"},{"playername":"jo","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"10"}],"lobby":[]}
+new connection from player:'jj'
+action: uploadmap
+new connection from player:'jo'
+action: uploadmap
+new connection from player:'jo'
+player is lost, putting them where they belong
+new connection from player:'jo'
+action: loadgamedata

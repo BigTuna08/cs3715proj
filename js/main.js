@@ -2,6 +2,9 @@
 var game;//persistent game state
 
 
+//function for one way communication with server
+var sendRequest=new SendRequest(lobby_id,playername);
+
 //set up the game data
 function handleGameData(info){
 	info.lobby.param=JSON.parse(info.lobby.param);
@@ -19,7 +22,8 @@ function handleGameData(info){
 			
 			};
 	});
-
+	
+	//set timer to remaining time
 	if(info.lobby.turn==0){
 		print("turn 0");
 		if(info.lobby.param.maptype==="random"){
@@ -32,8 +36,9 @@ function handleGameData(info){
 			//TODO
 		}
 	}else{
-		
-		
+		print("loading existing map");
+		game.map=JSON.parse(info.lobby.map);
+		drawMap();
 	}
 }
 
@@ -58,22 +63,55 @@ function loadGameData(){
 
 
 
+function endTurn(){
+	//disable button temporarily
+	var moveset=encodeURI(JSON.stringify(game.players[game.player].orders));
+	sendRequest("action=notifyendturn&moveset="+moveset);
+	function pollEndTurn(){
+		var xhr=new XMLHttpRequest();
+		xhr.onreadystatechange=function(){
+			if(xhr.readyState==4){
+				if(xhr.response=="wait"){
+				}else if(xhr.response!=""){
+					print("recieving moves");
+					var info=JSON.parse(xhr.response);;
+					clearInterval(handle);
+					processNewMoves(info);
+				}
+			}
+		}
+		xhr.open("POST","index.php");
+		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhr.send("action=pollendturn&lobby_id="+
+		game.lobby+"&playername="+game.player);
+	}
+	pollEndTurn();
+	var handle=setInterval(pollEndTurn,3000);
+	
+}
+
+//function PollEndTurn()
+function processNewMoves(info){
+	print("processing moves");
+	print(info);
+	
+	game.map.tiles[0][0].force+=1;
+	
+	
+	
+	
+	
+	//refresh entire map, I don't know how this doesn't flicker, must be magic
+	drawMap();
+	
+	//send map back
+	var mapdata=encodeURI(JSON.stringify(game.map));
+	sendRequest("action=uploadmap&mapdata="+mapdata);
+}
+
+
 function init(){
-	//TODO
-	//implement requests: 
-		//getgamedata initial setup or if resuming
-		//endturn with contains moves jsonified
-		//querymoves which will return other players moves
-		//doyouwantmymap? followed by okhereismymap (alternatively just send the map for every player)
-		//OPTIONAL
-		//save saves previous map in db with date as name
-	//know table_name and playername
-	//ask server for lobby params and player list
 	
-	//assign proper number of players to players
-	
-	//if map is null use seed to generate map
-	//otherwise assign map to map
 	game={
 		lobby:null,
 		input:{selected:null},
@@ -97,7 +135,7 @@ function init(){
 //create hex grid
 function generateMap(params){
 	var seed=params.seed;
-	var pick=new Pick(new Prng(seed));
+	var pick=Pick(Prng(seed));
 	game.map.x=params.dim[0];
 	game.map.y=params.dim[1];
 	var tiles=Array(game.map.y);
@@ -122,6 +160,7 @@ function generateMap(params){
 
 //create html from hex grid
 function drawMap(){
+	game.gfx.grid.innerHTML="";//clear whatever is left over
 	var tileHeight=game.gfx.tileDim[1];
 	var tileWidth=game.gfx.tileDim[0];
 	var imageMap=document.createElement('map');

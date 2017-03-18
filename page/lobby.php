@@ -66,16 +66,10 @@ function init(){
 	getInfo(true);
 	setInterval(getInfo,3000);
 }
-function sendRequest(action){
-	var xhr=new XMLHttpRequest();
-	xhr.onreadystatechange=function(){
-		console.log("for "+action+" I got "+xhr.response);
-	}
-	xhr.open("POST","index.php");
-	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xhr.send("lobby_id="+lobby_id+"&playername="+player+"&"+action);
-	console.log("lobby_id="+lobby_id+"&playername="+player+"&"+action);
-}
+
+var sendRequest=new SendRequest(lobby_id,player);
+
+
 function updateParams(){
 	var seed=id("seed").value;
 	var dim=[id('dimx').value,id('dimy').value]

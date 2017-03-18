@@ -4,9 +4,37 @@ var game;//persistent game state
 
 //set up the game data
 function handleGameData(info){
+	info.lobby.param=JSON.parse(info.lobby.param);
+	
+	//populate player list
+	game.numPlayers=info.players.length;
+	info.players.forEach((e,i)=>{
+		game.players[e.playername]={
+			colour:i*360/game.numPlayers,
+			orders:{
+				movement:[],
+				build:[],
+				raze:[]
+			},
+			
+			};
+	});
 
-	print(info);
-	return 1;
+	if(info.lobby.turn==0){
+		print("turn 0");
+		if(info.lobby.param.maptype==="random"){
+			print("need random map");
+			//generate map from seed
+			generateMap(info.lobby.param);
+			drawMap();
+		}else if(info.lobby.param.maptype==="load"){
+			//get map from info.lobby.map
+			//TODO
+		}
+	}else{
+		
+		
+	}
 }
 
 
@@ -49,12 +77,13 @@ function init(){
 	game={
 		lobby:null,
 		input:{selected:null},
-		map:{x:4,y:4,tiles:null},
+		map:{x:0,y:0,tiles:null},
 		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},grass:"grass",dirt:"dirt"},
 		building:{path:(name)=>{return "img/building/"+name+".png"},wall:"wall",city:"city"},
 		gfx:{tileDim:[64,74],grid:id("main")},
-		players:[],
-		player:0};
+		players:{},
+		numPlayers:0,
+		player:""};
 
 	//first copy the variables needed to bootstrap the rest of the game data
 	game.player=playername;
@@ -65,34 +94,31 @@ function init(){
 
 
 
-//create 2d hex grid
-function generateMap(){
+//create hex grid
+function generateMap(params){
+	var seed=params.seed;
+	var pick=new Pick(new Prng(seed));
+	game.map.x=params.dim[0];
+	game.map.y=params.dim[1];
 	var tiles=Array(game.map.y);
 	for(var y=0;y<tiles.length;y++){
 		tiles[y]=Array(game.map.x);
 		for(var x=0;x<tiles[y].length;x++){
-			tiles[y][x]={terrain:game.terrain[(Math.random()>0.8)?"grass":"dirt"]};
+			var force=pick(0,20);
+			tiles[y][x]={terrain:game.terrain[["grass","dirt"][pick(0,1)]],
+					building:game.building[["city","wall"][pick(0,1)]],
+					owner:Object.keys(game.players)[pick(0,game.numPlayers-1)],
+					force:force,
+					uncommitedForce:force
+				};
+			if(tiles[y][x].building=="city"){
+				tiles[y][x].buildingData={pop:pick(5,10),available:pick(5,10)};
+			}
+			
 		}
 	}
-	return tiles;
+	game.map.tiles=tiles;
 }
-
-function populateMap(){
-	game.map.tiles.forEach((row,y)=>{
-		row.forEach((tile,x)=>{
-			
-			tile.building=game.building[(Math.random()>0.5)?"city":"wall"];
-			tile.owner=(pick(0,game.players.length));
-			tile.force=pick(0,20);
-			tile.uncommitedForce=tile.force;
-			if(tile.building=="city"){
-				tile.buildingData={pop:pick(5,10),available:pick(5,10)};
-			}
-		})
-	})
-}
-
-
 
 //create html from hex grid
 function drawMap(){
@@ -107,7 +133,6 @@ function drawMap(){
 	
 	game.map.tiles.forEach((row,y)=>{
 		row.forEach((tile,x)=>{
-		
 			var container=document.createElement('div');
 			tile.container=container;
 			var img=document.createElement("img");
@@ -217,7 +242,6 @@ function drawMap(){
 
 
 
-
 function handleClick(tileRef){
 	var dest=getTile(tileRef);
 	var destRef=tileRef;
@@ -236,7 +260,7 @@ function handleClick(tileRef){
 	}else {//selected a dest tile
 		var source=getTile(game.input.selected);
 		var sourceRef=game.input.selected;
-		var orderArr=game.players[game.player].orders;
+		var orderArr=game.players[game.player].orders.movement;
 		//determine adjacency
 		var adjacent=false;
 		var dir=0;
@@ -311,7 +335,7 @@ function handleClick(tileRef){
 		var pos=arrowPos[dir];
 		container.style.position="absolute";
 		container.className="fcount";
-		container.style.color="black";
+		container.style.color="white";
 		container.style.left=pos[0]+"px";
 		container.style.top=pos[1]+"px";
 		container.style.width="10px";

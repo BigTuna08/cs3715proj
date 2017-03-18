@@ -6,7 +6,7 @@
 
 //everything is nondestructive unless noted
 
-//PRNG with seed because Math.random() isn't deterministic
+//construct PRNG with seed because Math.random() isn't deterministic
 function Prng(x){
 	var f=function(){
 		return (x=(x*1664525+1013904223)%4294967296)/4294967296;
@@ -15,12 +15,14 @@ function Prng(x){
 	return f;
 }
 
-var prngSeed;
-if(!window.prngSeed){
-	prngSeed=4;
+
+function Pick(prng){
+	var f=function(i,t){
+		return Math.floor(prng()*(t-i+1))+i;
+	}
+	return f;
 }
 
-var prng=new Prng(prngSeed);
 
 //add two arrays
 function add(a,b){
@@ -29,7 +31,7 @@ function add(a,b){
 
 //random integer between i and t
 function pick(i,t){
-	return Math.floor(prng()*(t-i)+i);
+	
 }
 
 Array.prototype.isEqual=function(o){

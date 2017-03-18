@@ -32,10 +32,11 @@ function redisplay(info){
 	id("seed").value=params.seed;
 	id("dimx").value=params.dim[0];
 	id("dimy").value=params.dim[1];
+	document.querySelector('input[name="maptype"][value='+params.maptype+']').checked=true;
 
 	if(!waiting){
 		sendRequest("action=notifyentergame");
-		setTimeout(()=>{window.location.replace("game1.php?playername="+player)},1000);
+		setTimeout(()=>{window.location.replace("index.php?playername="+player)},1000);
 	}
 }
 
@@ -53,7 +54,7 @@ function getInfo(force){
 			}
 		}
 	}
-	xhr.open("POST","game1.php");
+	xhr.open("POST","index.php");
 	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xhr.send("action=querylobby&lobby_id="+lobby_id+"&playername="+player+(force?"&force=true":""));
 	
@@ -70,7 +71,7 @@ function sendRequest(action){
 	xhr.onreadystatechange=function(){
 		console.log("for "+action+" I got "+xhr.response);
 	}
-	xhr.open("POST","game1.php");
+	xhr.open("POST","index.php");
 	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xhr.send("lobby_id="+lobby_id+"&playername="+player+"&"+action);
 	console.log("lobby_id="+lobby_id+"&playername="+player+"&"+action);
@@ -78,14 +79,16 @@ function sendRequest(action){
 function updateParams(){
 	var seed=id("seed").value;
 	var dim=[id('dimx').value,id('dimy').value]
-	var params={seed:seed,dim:dim};
+	var maptype=document.querySelector('input[name="maptype"]:checked').value;
+
+	var params={seed:seed,dim:dim,maptype:maptype};
 	console.log("params="+encodeURI(JSON.stringify(params)));
 	sendRequest("action=updateparams&params="+encodeURI(JSON.stringify(params)));
 	
 }
 function leave(){
 	sendRequest('action=leavelobby');
-	setTimeout(()=>{window.location.replace("game1.php?playername="+player)},1000);
+	setTimeout(()=>{window.location.replace("index.php?playername="+player)},1000);
 }
 </script>
 <title>LOBBY</title>
@@ -94,6 +97,8 @@ function leave(){
 <h1 id="title"></h1>
 <div id="param_fields">
 	<button>IMA HOST</button>
+	<label><input type="radio" name="maptype" value="random" onchange="updateParams()">Random</label>
+	<label><input type="radio" name="maptype" value="load" onchange="updateParams()">Load</label>
 	<input id="seed" type="number" value="123456" onchange="updateParams()">
 	<label>horizontal tiles: <input id="dimx" type="number" value="5" onchange="updateParams()"></label>
 	<label>vertical tiles: <input id="dimy" type="number" value="5" onchange="updateParams()"></label>

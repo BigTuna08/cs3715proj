@@ -95,12 +95,12 @@ if(!isset($_POST['action'])){
 			if(count($conn->query($query)->fetch_all(MYSQLI_ASSOC))==0){
 				//lobby does not exist
 				
-				$params=['seed'=>123456,'dim'=>[4,4]];
+				$params=['seed'=>123456,'dim'=>[4,4],'maptype'=>'random'];
 				$params=json_encode($params);
 				$params=$conn->real_escape_string($params);
 				echo $params;
 				//register lobby
-				$query="INSERT INTO `lobby` (name,param) VALUES ('$proposed_name','$params')";
+				$query="INSERT INTO `lobby` (name,param,turn) VALUES ('$proposed_name','$params',0)";
 				$conn->query($query) or die($conn->error);
 				
 				

@@ -1,5 +1,38 @@
 TODO
 
+GAME LOGIC FLOW SKETCH
+timer end turn (visual only, automatically submits when done)
+manually click end turn
+	submit moves:
+		SERVER
+		update individual player turn number (so turn=1 means stored moves were for turn 0)
+		store moves for player
+		CLIENT
+		starts polling for other players moves
+			SERVER
+			server checks all player turn numbers are equal
+			if timer expired+seconds for autosubmit passed, set moves to none for absent players (probably closed browser)
+				and increment their turn counters
+			if all equal sends move set
+				and increments lobby turn
+			if not responds wait
+			CLIENT
+			if not waiting
+			recieves moveset
+			updates game map//99% of code here
+			if lose condition notify resignation
+				SERVER
+				removes player from game
+				set player  activity to none
+				if only one player remains
+					delete lobby, unregister lobby, 
+			if win condition alert("u r winner")//no need to tell server they'll figure it out
+			sends map to server//duplicated by nnumber of players but that's ok
+				SERVER
+				server stores map in lobby to be used for reconnecting players
+
+
+
 JAVASCRIPT main.js
 -build/raze orders
 -ajax recieve opponent moves when server says they are ready
@@ -20,4 +53,7 @@ LOBBY lobby.php
 		-with initial conditions inserted in the page by php
 			-conditions: (dimensions,seed,players)
 			-if loaded a map: (the map, jsonified)
-	
+
+
+GRAPHICS:
+make movement arrows more visible

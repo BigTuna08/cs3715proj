@@ -5,9 +5,8 @@ $stmt->execute();
 $activity=explode(' ',$stmt->get_result()->fetch_array()['activity']);
 $lobby_id='';
 $lobby_id=$activity[1];
-
 ?>
-<script type="text/javascript" src="util.js"></script>
+<script type="text/javascript" src="js/util.js"></script>
 <script>
 "use strict"
 //globals

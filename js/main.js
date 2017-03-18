@@ -1,13 +1,34 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
 
-//initialise game data
 
-function loadGameData(){
-	var xhr=new XMLHttpRequest(){
-		
-	}
+//set up the game data
+function handleGameData(info){
+
+	print(info);
+	return 1;
 }
+
+
+//end request to indiscriminately get all the database info about this game
+//note that this only gets called once (or whenever someone reconnects), and not every turn
+function loadGameData(){
+	var xhr=new XMLHttpRequest();
+	xhr.onreadystatechange=function(){
+		if(xhr.readyState==4){
+			if(xhr.response!=""){
+				var info=JSON.parse(xhr.response);
+				handleGameData(info);
+				xhr.abort();
+			}
+		}
+	}
+	xhr.open("POST","index.php");
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xhr.send("action=loadgamedata&lobby_id="+game.lobby+"&playername="+game.player);
+}
+
+
 
 function init(){
 	//TODO
@@ -38,23 +59,11 @@ function init(){
 	//first copy the variables needed to bootstrap the rest of the game data
 	game.player=playername;
 	game.lobby=lobby_id;
-
+	loadGameData();
 }
 
 
-function handleGameData(){
 
-	for(var i=0;i<lobbyData.players;i++){
-		game.players.push({name:"player"+i,orders:[],build:[],raze:[]})
-	}
-
-	game.players=game.players.map((element,index)=>{
-		element.colour=index*360/game.players.length;return element});
-
-	game.map.tiles=generateMap();
-	populateMap();
-	drawMap();
-}
 
 //create 2d hex grid
 function generateMap(){

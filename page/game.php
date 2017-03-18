@@ -7,16 +7,16 @@ $lobby_id=$page_data['lobby_id'];
 <html>
 <head>
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
 	<script type="text/javascript">
 		<?PHP
 		echo "var lobby_id='$lobby_id';";
 		echo "var playername='$playername';";
 		?>
 	</script>
-	<script type="text/javascript" src="util.js"></script>
-	<script type="text/javascript" src="gameObj.js"></script>
-	<script type="text/javascript" src="main.js"></script>
+	<script type="text/javascript" src="js/util.js"></script>
+	<script type="text/javascript" src="js/gameObj.js"></script>
+	<script type="text/javascript" src="js/main.js"></script>
 </head>
 <body style="margin:0" onload="init()">
 	<div id="main" style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">

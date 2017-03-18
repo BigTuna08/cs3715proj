@@ -14,7 +14,7 @@ if(!isset($_GET['id'])){
 	//register lobby
 	$query="INSERT INTO `lobby` 
 		(id,name,players,param) VALUES 
-		($game_counter,'game_$game_counter',0,'')";
+		($game_counter,'game_$game_counter',0,'{}')";
 	$conn->query($query) or die($conn->error);
 	//create lobby table
 	$id=$game_counter;
@@ -25,8 +25,6 @@ if(!isset($_GET['id'])){
 }else{
 	$id=$_GET['id'];
 }
-//add player who requested this page
-$query="SELECT players FROM `lobby` WHERE id=$id";
 
 //set player number
 $player=$conn->query($query)->fetch_array()['players'];
@@ -52,6 +50,7 @@ $conn->query($query)or die($conn->error);;
 <script type="text/javascript" src="util.js"></script>
 
 <script>
+"use strict"
 //globals
 var lobby_id=<?PHP echo $id?>;
 var player=<?PHP echo $player?>;
@@ -59,7 +58,11 @@ var player=<?PHP echo $player?>;
 
 function redisplay(info){
 	//clear display
+	console.log(info);
 	var ulist=id("players");
+	//if not the host, update displayed params
+	if(player!=0)id("seed").value=JSON.parse(info.lobby.param).seed;
+
 	for(var i=0;i<ulist.children.length;i++){
 		ulist.removeChild(ulist.children[i]);
 	}
@@ -82,8 +85,9 @@ function redisplay(info){
 function getInfo(){
 	var xhr=new XMLHttpRequest();
 	xhr.onreadystatechange=function(){
-		//console.log(xhr.response);
-		if(xhr.readyState==4){	
+		console.log(xhr.response);
+		print(xhr.response);
+		if(xhr.readyState==4){
 			if(xhr.response==="nochange")return;
 			else if(xhr.responseText!=""){
 				var info=JSON.parse(xhr.responseText);
@@ -101,23 +105,48 @@ function getInfo(){
 }
 function init(){
 	getInfo();
-	setInterval(getInfo,3000);
+	setInterval(getInfo,1000);
 }
 function sendRequest(action){
 	var xhr=new XMLHttpRequest();
+	
+	
+	xhr.onreadystatechange=function(){
+		console.log("for "+action+" I got "+xhr.response);
+	}
+	
 	xhr.open("POST","lobby_helper.php");
 	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xhr.send("lobby="+lobby_id+"&player="+player+"&"+action);
+	console.log("lobby="+lobby_id+"&player="+player+"&"+action);
 }
-
+function updateParams(){
+	var seed=id("seed").value;
+	var dim=[id(dimx).value,id(dimy.value)]
+	var params={seed:seed};
+	console.log("params="+encodeURI(JSON.stringify(params)));
+	sendRequest("params="+encodeURI(JSON.stringify(params)));
+	
+}
 </script>
 <title>LOBBY <?PHP echo '#'.$id?></title>
 </head>
 <body onload="init()">
-<h1>lobby</h1>
-<?PHP if($host){?>	
+<h1>LOBBY <?PHP echo '#'.$id?></h1>
+
+<div id="param_fields">
 	<button>IMA HOST</button>
-<?PHP }?>
+	<input id="seed" type="number" value="123456" onchange="updateParams()">
+	<label>horizontal tiles: <input id="dimx" type="number" value="5" onchange="updateParams()"></label>
+	<label>vertical tiles: <input id="dimy" type="number" value="5" onchange="updateParams()"></label>
+</div>
+<?PHP if(!$host){ ?>
+<script>
+id("param_fields").querySelectorAll("input").forEach((e)=>{
+		e.disabled=true;
+	});
+</script>
+<?PHP } ?>
 <ul id="players">
 
 </ul>

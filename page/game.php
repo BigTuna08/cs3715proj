@@ -1,32 +1,22 @@
 <?PHP
 
+$lobby_id=$page_data['lobby_id'];
 
-//get game data
-/*
-$query="SELECT * FROM lobby WHERE name=$";
-$lobbyData=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
-
-$query="SELECT * FROM lobby_$id WHERE id=$id";
-
-$playerData=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
-*/
 ?>
 <!doctype html>
 <html>
 <head>
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<link rel="stylesheet" type="text/css" href="style.css">
-<script type="text/javascript"><?PHP
-echo "var lobbyData=".json_encode($lobbyData).';';
-echo "var playerData=".json_encode($playerData).';';
-echo "var playerNum=".$player.";";
-echo "var prngSeed=4;";// https://xkcd.com/221/
-?>
-
-</script>
-<script type="text/javascript" src="util.js"></script>
-<script type="text/javascript" src="gameObj.js"></script>
-<script type="text/javascript" src="main.js"></script>
+	<script type="text/javascript">
+		<?PHP
+		echo "var lobby_id='$lobby_id';";
+		echo "var playername='$playername';";
+		?>
+	</script>
+	<script type="text/javascript" src="util.js"></script>
+	<script type="text/javascript" src="gameObj.js"></script>
+	<script type="text/javascript" src="main.js"></script>
 </head>
 <body style="margin:0" onload="init()">
 	<div id="main" style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">

@@ -1,11 +1,32 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
-print(lobbyData);//data delivered by php when page loaded
 
 //initialise game data
+
+function loadGameData(){
+	var xhr=new XMLHttpRequest(){
+		
+	}
+}
+
 function init(){
+	//TODO
+	//implement requests: 
+		//getgamedata initial setup or if resuming
+		//endturn with contains moves jsonified
+		//querymoves which will return other players moves
+		//doyouwantmymap? followed by okhereismymap (alternatively just send the map for every player)
+		//OPTIONAL
+		//save saves previous map in db with date as name
+	//know table_name and playername
+	//ask server for lobby params and player list
 	
+	//assign proper number of players to players
+	
+	//if map is null use seed to generate map
+	//otherwise assign map to map
 	game={
+		lobby:null,
 		input:{selected:null},
 		map:{x:4,y:4,tiles:null},
 		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},grass:"grass",dirt:"dirt"},
@@ -14,14 +35,22 @@ function init(){
 		players:[],
 		player:0};
 
-	game.player=playerNum;
+	//first copy the variables needed to bootstrap the rest of the game data
+	game.player=playername;
+	game.lobby=lobby_id;
+
+}
+
+
+function handleGameData(){
+
 	for(var i=0;i<lobbyData.players;i++){
 		game.players.push({name:"player"+i,orders:[],build:[],raze:[]})
 	}
 
 	game.players=game.players.map((element,index)=>{
 		element.colour=index*360/game.players.length;return element});
-	
+
 	game.map.tiles=generateMap();
 	populateMap();
 	drawMap();

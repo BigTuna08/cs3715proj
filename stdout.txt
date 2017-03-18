@@ -1,0 +1,47 @@
+UPDATE player SET activity='' WHERE name='jo'
+UPDATE player SET activity='' WHERE name='jo'
+SELECT * FROM lobby_9
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_9
+hello
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_9
+hello
+DROP TABLE lobby_9;DELETE FROM lobby WHERE id=9
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_10
+hello
+DROP TABLE lobby_10
+DROP TABLE lobby_10
+deleted table
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_11
+hello
+DELETE FROM lobby WHERE id=11
+DELETE FROM lobby WHERE id=11
+deleted table
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_12
+hello
+UPDATE player SET activity='game 13' WHERE name='jo'
+UPDATE player SET activity='game 13' WHERE name='jj'
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_13
+UPDATE player SET activity='' WHERE name='jo'
+SELECT * FROM lobby_13
+hello
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_14
+hello
+UPDATE player SET activity='' WHERE name='jj'
+SELECT * FROM lobby_
+hello
+UPDATE player SET activity='game 16' WHERE name='jo'
+UPDATE player SET activity='game 16' WHERE name='jj'
+UPDATE player SET activity='' WHERE name='jo'
+UPDATE player SET activity='game 17' WHERE name='jj'
+UPDATE player SET activity='game 17' WHERE name='jo'
+UPDATE player SET activity='game 18' WHERE name='jj'
+UPDATE player SET activity='game 18' WHERE name='jo'
+UPDATE player SET activity='game 19' WHERE name='jj'
+UPDATE player SET activity='game 19' WHERE name='jo'

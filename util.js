@@ -15,6 +15,11 @@ function Prng(x){
 	return f;
 }
 
+var prngSeed;
+if(!window.prngSeed){
+	prngSeed=4;
+}
+
 var prng=new Prng(prngSeed);
 
 //add two arrays
@@ -91,3 +96,4 @@ function get_adjacency(tileRef){
 function getTile(tileRef){
 	return game.map.tiles[tileRef[1]][tileRef[0]];
 }
+

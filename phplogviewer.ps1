@@ -1,0 +1,1 @@
+Get-Content C:\Users\user\program_files\uniserver\UniServerZ\core\apache2\logs\error.log -Wait

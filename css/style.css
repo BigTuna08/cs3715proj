@@ -1,0 +1,39 @@
+.point-through {
+	pointer-events:none;
+}
+body{
+	background:grey;
+}
+.fcount{
+	color:#FFFFFF;
+	z-index:50;
+	text-shadow:2px 2px black;
+	
+}
+.moveInd{
+	color:#000000;
+	z-index:50;
+	text-shadow:1px 1px grey;
+}
+.citycount{
+	color:#FFFF00;
+	z-index:50;
+	text-shadow:2px 2px black;
+	
+	
+}
+button{
+	float:left;
+}
+.razeBtn{
+	background:orange;border-radius:4px;border:2px solid yellow
+}
+.blBtn{
+	background:cyan;border-radius:4px;border:2px solid magenta
+}
+.endBtn{
+	margin-left:20px;background:grey;border-radius:4px;border:2px solid yellow
+}
+button:hover{
+	background:white;
+}

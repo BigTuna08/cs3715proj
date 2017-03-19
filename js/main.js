@@ -134,11 +134,14 @@ function init(){
 
 //create hex grid
 function generateMap(params){
+	print(params);
 	var seed=params.seed;
 	var pick=Pick(Prng(seed));
-	game.map.x=params.dim[0];
-	game.map.y=params.dim[1];
+	game.map.x=parseInt(params.dim[0]);
+	game.map.y=parseInt(params.dim[1]);
+	print(game);
 	var tiles=Array(game.map.y);
+	print(tiles.length);
 	for(var y=0;y<tiles.length;y++){
 		tiles[y]=Array(game.map.x);
 		for(var x=0;x<tiles[y].length;x++){
@@ -152,6 +155,7 @@ function generateMap(params){
 			if(tiles[y][x].building=="city"){
 				tiles[y][x].buildingData={pop:pick(5,10),available:pick(5,10)};
 			}
+			print(tiles[y][x]);
 			
 		}
 	}
@@ -393,9 +397,8 @@ function handleClick(tileRef){
 		orderArr.push(new mvOrder(sourceRef,tileRef,force,container));
 		unhighlight(game.input.selected);
 		game.input.selected=null;
-	
 	}
-	//local functions
+	
 	function highlight(tileRef){
 		getTile(tileRef).container.style.filter="brightness(1.4)";
 	}

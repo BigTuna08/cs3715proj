@@ -92,9 +92,10 @@ if(!isset($_POST['action'])){
 		break;
 		case 'newlobby':
 			
-			$proposed_name=$_POST['name'];
+			$proposed_name=$conn->real_escape_string($_POST['name']);
 			//check if lobby exists
-			$query="SELECT * FROM lobby WHERE name='$proposed_name'";
+			$query="SELECT * FROM lobby WHERE name='".$proposed_name."'";
+			echo $query;
 			if(count($conn->query($query)->fetch_all(MYSQLI_ASSOC))==0){
 				//lobby does not exist
 				

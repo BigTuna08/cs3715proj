@@ -22,3 +22,151 @@ new connection from player:'jo'
 player is lost, putting them where they belong
 new connection from player:'jo'
 action: loadgamedata
+new connection from player:'jj'
+player is lost, putting them where they belong
+new connection from player:'jo'
+action: loadgamedata
+new connection from player:'jj'
+action: loadgamedata
+new connection from player:'jj'
+player is lost, putting them where they belong
+new connection from player:'jo'
+player is lost, putting them where they belong
+new connection from player:'jj'
+player is lost, putting them where they belong
+new connection from player:'jj'
+player is lost, putting them where they belong
+new connection from player:''
+new player
+new connection from player:''
+new player
+new connection from player:''
+action: signup
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: newlobby
+new connection from player:'ben'
+action: newlobby
+new connection from player:'ben'
+action: newlobby
+new connection from player:'ben'
+action: newlobby
+new connection from player:'ben'
+action: newlobby
+new connection from player:'ben'
+action: newlobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:''
+action: signup
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: join
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: updateparams
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: ready
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: ready
+new connection from player:'spongebob'
+action: querylobby
+new connection from player:'ben'
+action: querylobby
+new connection from player:'spongebob'
+action: notifyentergame
+new connection from player:'ben'
+action: notifyentergame
+new connection from player:'spongebob'
+player is lost, putting them where they belong
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'spongebob'
+action: loadgamedata
+new connection from player:'ben'
+action: querylobby
+new connection from player:'ben'
+action: loadgamedata
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: loadgamedata
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: loadgamedata
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: loadgamedata
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: loadgamedata
+new connection from player:'ben'
+player is lost, putting them where they belong
+new connection from player:'ben'
+action: loadgamedata
+new connection from player:'spongebob'
+player is lost, putting them where they belong
+new connection from player:'spongebob'
+action: loadgamedata

@@ -1,0 +1,138 @@
+-- phpMyAdmin SQL Dump
+-- version 4.6.6
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1:3306
+-- Generation Time: Mar 19, 2017 at 04:33 PM
+-- Server version: 5.6.35
+-- PHP Version: 7.1.1
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `3715game`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `global`
+--
+
+CREATE TABLE `global` (
+  `game_counter` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `global`
+--
+
+INSERT INTO `global` (`game_counter`) VALUES
+(41);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lobby`
+--
+
+CREATE TABLE `lobby` (
+  `name` varchar(20) NOT NULL,
+  `players` int(11) NOT NULL,
+  `param` text NOT NULL,
+  `id` int(11) NOT NULL,
+  `map` text NOT NULL,
+  `turn` int(11) NOT NULL,
+  `turntimerstart` timestamp NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `lobby`
+--
+
+INSERT INTO `lobby` (`name`, `players`, `param`, `id`, `map`, `turn`, `turntimerstart`) VALUES
+('ben\'s lobby', 0, '{\"seed\":\"456456456\",\"dim\":[\"4\",\"4\"],\"maptype\":\"random\"}', 1, '', 0, '0000-00-00 00:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lobby_1`
+--
+
+CREATE TABLE `lobby_1` (
+  `playername` varchar(50) DEFAULT NULL,
+  `ready` tinyint(1) DEFAULT NULL,
+  `changed` tinyint(1) DEFAULT NULL,
+  `moveset` text,
+  `turn` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `lobby_1`
+--
+
+INSERT INTO `lobby_1` (`playername`, `ready`, `changed`, `moveset`, `turn`) VALUES
+('ben', 1, 0, NULL, 0),
+('spongebob', 1, 0, NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `player`
+--
+
+CREATE TABLE `player` (
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `activity` varchar(300) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `player`
+--
+
+INSERT INTO `player` (`id`, `name`, `activity`) VALUES
+(1, 'ben', 'game 1'),
+(2, 'spongebob', 'game 1');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `lobby`
+--
+ALTER TABLE `lobby`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`);
+
+--
+-- Indexes for table `player`
+--
+ALTER TABLE `player`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `lobby`
+--
+ALTER TABLE `lobby`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+--
+-- AUTO_INCREMENT for table `player`
+--
+ALTER TABLE `player`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

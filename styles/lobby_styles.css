@@ -1,0 +1,38 @@
+body {
+        background-color: orange;
+        text-align: center;
+        padding: 20px;
+}
+h1 {
+	width: 550px;
+	text-align: center;
+}
+label {
+	width: 260px;
+	float: left;
+	padding: 5px;
+}
+label input {
+	width: 150px;
+	float: right;
+}
+table {
+	margin: auto;
+	border: 1px solid grey;
+	padding: 10px;
+	text-align: center;
+}
+form {
+	width: 300px;
+}
+.sub-button {
+	float: none;
+	width: 280px;
+	height: 25px;
+	font-size: 1.25em;
+}
+
+.spacer {
+clear:both;
+height: 100px;
+}

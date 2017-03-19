@@ -1,52 +1,26 @@
 <html>
 <head>
     <title>Login Page</title>
-    <style type="text/css">
-      body {
-        background-color: orange;
-        text-align: center;
-        padding: 20px;
-      }
-      h1 {
-        width: 550px;
-        text-align: center;
-      }
-      label {
-        width: 260px;
-        float: left;
-        padding: 5px;
-      }
-      label input {
-        width: 150px;
-        float: right;
-        
-      }
-      table {
-        margin: auto;
-        border: 1px solid grey;
-        padding: 10px;
-        text-align: center;
-      }
-      form {
-        width: 300px;
-      }
-      .sub-button {
-        float: none;
-        width: 280px;
-        height: 25px;
-        font-size: 1.25em;
-      }
+    <link rel="stylesheet" type="text/css" href="styles/lobby_styles.css">
+    <script type="text/javascript">
 
-      .spacer {
-        clear:both;
-        height: 100px;
-      }
-    </style>
+    function loadDoc() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("demo").innerHTML = this.responseText + " " + document.getElementById('uname').value;
+        }
+      };
+      xhttp.open("GET", "ajax_info.txt", true);
+      xhttp.send();
+    }
 
+    </script>
 </head>
+
 <body>
 
-  <div align="center" style="border:1px solid black;overflow:auto;">
+  <div align="center" style="border:1px solid black;overflow:auto;" id="demo">
     <div>
        <h1>Better Wars</h1>
     </div>
@@ -55,11 +29,11 @@
     </div>
     <div>
        <form id="f1" action="index.html" method="POST"> 
-          <label>User Name: <input type="text" name="user_id"></label>
+          <label>User Name: <input type="text" id="uname" name="user_id"></label>
           <br>
           <div style="height:25px"> </div>
           
-        <label><input type="submit" class="sub-button" value="Enter BetterWorld"></label>
+        <label><button type="button" onclick="loadDoc()">Change Content</button></label>
         <br>
         <div style="height:25px"> </div>
        </form>

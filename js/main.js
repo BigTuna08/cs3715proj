@@ -324,7 +324,11 @@ function handleClick(tileRef){
 		}
 		
 		print("calculating move");
-		var force=Number(prompt("Force",0));
+		while(true){
+			var force=Number(prompt("Force",0));
+			if(force>=0) break;
+
+		}
 		print("asked to move "+force+" units");
 		
 		//lookup conflicting moves
@@ -332,6 +336,7 @@ function handleClick(tileRef){
 		var counterIndex=-1;//a move in the opposite direction
 		var existingOrder=orderArr.find(
 			(e,i)=>{
+				print("agadgs");
 				print("checking "+e);
 				if(e.source.isEqual(game.input.selected) && e.dest.isEqual(tileRef)){
 					simulIndex=i;
@@ -341,6 +346,9 @@ function handleClick(tileRef){
 					return true;
 				}
 			});
+			
+			
+		print("RAGAGAGH");
 		if(simulIndex!=-1){
 			print("move exists in this direction");
 			print(orderArr[simulIndex]);
@@ -366,8 +374,9 @@ function handleClick(tileRef){
 		if(force>source.uncommitedForce){
 			force=source.uncommitedForce;
 		}
-		returnForce(source,-force);
 		
+		returnForce(source,-force);
+				
 		//CREATE GRAPHIC
 		var container=document.createElement('div');
 		var indicator=document.createElement("img");

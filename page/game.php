@@ -26,14 +26,14 @@ $lobby_id=$page_data['lobby_id'];
 	</div>
 	
 	<div style="padding:5px;position:fixed;bottom:0px;right:0px;width:500px;height:30px;background:red;border-radius:4px;border:2px solid orange">
-		<button class="razeBtn"><em>RAZE</em></button>
+		<button onclick="razeOrder()" class="razeBtn"><em>RAZE</em></button>
 		<div style="margin-left:5px;float:left;background:yellow;border-radius:4px;border:2px solid blue">
 			<button onclick="orderBuild('city')" class="blBtn"><b>CITY(5)</b></button>
 			<button onclick="orderBuild('farm')" class="blBtn"><b>FARM(2)</b></button>
 			<button onclick="orderBuild('wall')" class="blBtn"><b>WALL(2)</b></button>
 			<button onclick="orderBuild('camp')" class="blBtn"><b>CAMP(3)</b></button>
 		</div>
-		<button onclick="endTurn()" class="endBtn"><em>END TURN</em></button>
+		<button id="endturnbutton" onclick="endTurn()" class="endBtn"><em>END TURN</em></button>
 	</div>
 </body>
 </html>

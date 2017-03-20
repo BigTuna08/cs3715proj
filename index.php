@@ -120,12 +120,11 @@ if(!isset($_POST['action'])){
 				//create lobby table
 				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,moveset TEXT,turn INT)";
 				$conn->query($query) or die($conn->error);
+
 				
 				//remember that player is currently hosting (that way if they refresh nothing breaks)
-				$stmt=$conn->prepare("UPDATE player SET activity='wait $id' WHERE name=?");
-				$name=$playername;
-				$stmt->bind_param("s",$name);
-				$stmt->execute();
+				$query="UPDATE player SET activity='wait $id' WHERE name='$playername'";
+				$conn->query($query) or die($conn->error);
 				
 				//insert player into lobby
 				$query="INSERT INTO $table_name (playername,ready,changed,turn)VALUES('$playername',FALSE,TRUE,0)";
@@ -228,7 +227,7 @@ if(!isset($_POST['action'])){
 		break;
 		case 'querylobby':
 			
-			
+
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			//check if anything has been changed

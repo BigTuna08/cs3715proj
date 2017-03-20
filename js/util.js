@@ -106,16 +106,29 @@ function id(id){
  * Hexagon Tools
  */
 
+//initialize this in main
+var tileDim=[0,0];
+ 
+ 
 //get offset of coordinates of adjacent tiles
 function get_adjacency(tileRef){
 	//east clockwise to northeast, even/odd rows
 	var neighbours=[[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
 				[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]];
-	return neighbours[tileRef[1]%2].map((e)=>{return add(e,tileRef)});
+	var ret= neighbours[tileRef[1]%2].map((e)=>{return add(e,tileRef)});
+	for(var i=0;i<ret.length;i++){
+		if(ret[i][0]<0 || ret[i][0]>tileDim[0] ||
+		   ret[i][1]<0 || ret[i][1]>tileDim[1]){
+			ret.splice(i--,1);
+		}
+	}
+	return ret
 }
 
 
+
 function getTile(tileRef){
+	
 	return game.map.tiles[tileRef[1]][tileRef[0]];
 }
 

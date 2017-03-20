@@ -22,7 +22,7 @@ function handleGameData(info){
 			
 			};
 	});
-	
+	tileDim=info.lobby.param.dim;
 	//set timer to remaining time
 	if(info.lobby.turn==0){
 		print("turn 0");
@@ -64,6 +64,7 @@ function loadGameData(){
 
 
 function endTurn(){
+	id("endturnbutton").disabled=true;
 	//disable button temporarily
 	var moveset=encodeURI(JSON.stringify(game.players[game.player].orders));
 	sendRequest("action=notifyendturn&moveset="+moveset);
@@ -93,17 +94,78 @@ function endTurn(){
 //function PollEndTurn()
 function processNewMoves(info){
 	print("processing moves");
+	
+	
+	//game.map.tiles[0][0].force+=1;
+	
+	info.players.forEach((e,i)=>{
+
+		info.players[i].moveset=JSON.parse(e.moveset);
+		
+	});
+	
 	print(info);
 	
-	game.map.tiles[0][0].force+=1;
+	//do raze orders
+	info.players.forEach((e)=>{
+		e.moveset.raze.forEach((m)=>{
+			print(getTile(m.tile));
+			game.map.tiles[m.tile[1]][m.tile[0]].building=null;
+	})});
+
+	//calculate new forces, first check for collisions
+	info.players.forEach((e)=>{
+		e.moveset.movement.forEach((m)=>{
+			var src=getTile(m.source);
+			var dest=getTile(m.dest);
+			var force=m.force;
+			var target=dest.owner;
+			info.players.some((e2)=>{
+				if(e2.playername==target){
+					e2.moveset.movement.some((m2)=>{
+						if(m2.source.isEqual(dest) && m2.dest.isEqual(src)){
+							//cancel forces and construct new order
+							console.log("forces met at edge");
+							
+						}
+					});
+					return true
+				}
+			});
+		});
+			
+			//game.map.tiles[m.tile[1]][m.tile[0]].building=null;
+	});
+	
+	//clear temporary data
+	
+	//add forces from existing buildings
 	
 	
 	
+	//build buildings
+	info.players.forEach((e)=>{
+		e.moveset.build.forEach((m)=>{
+			if(getTile(m.tile).owner!=e.playername){
+				//the tile was attacked while being constructed,
+				//the units involved were lost
+			}else{
+				print("constructing");
+				print(getTile(m.tile));
+				game.map.tiles[m.tile[1]][m.tile[0]].building=m.type;
+				
+			}})});
 	
+	
+	game.players[game.player].orders={
+		movement:[],
+		build:[],
+		raze:[]};
 	
 	//refresh entire map, I don't know how this doesn't flicker, must be magic
 	drawMap();
-	
+	id("endturnbutton").disabled=false;
+	game.input.selected=null;
 	//send map back
 	var mapdata=encodeURI(JSON.stringify(game.map));
 	sendRequest("action=uploadmap&mapdata="+mapdata);
@@ -134,14 +196,11 @@ function init(){
 
 //create hex grid
 function generateMap(params){
-	print(params);
 	var seed=params.seed;
 	var pick=Pick(Prng(seed));
 	game.map.x=parseInt(params.dim[0]);
 	game.map.y=parseInt(params.dim[1]);
-	print(game);
 	var tiles=Array(game.map.y);
-	print(tiles.length);
 	for(var y=0;y<tiles.length;y++){
 		tiles[y]=Array(game.map.x);
 		for(var x=0;x<tiles[y].length;x++){
@@ -155,7 +214,6 @@ function generateMap(params){
 			if(tiles[y][x].building=="city"){
 				tiles[y][x].buildingData={pop:pick(5,10),available:pick(5,10)};
 			}
-			print(tiles[y][x]);
 			
 		}
 	}
@@ -200,7 +258,7 @@ function drawMap(){
 			game.gfx.grid.appendChild(container);
 			
 		
-			if(tile.building!=""){
+			if(tile.building!=null){
 				var building=document.createElement('img');
 				building.style.position="absolute";
 				building.className="point-through";
@@ -316,6 +374,11 @@ function handleClick(tileRef){
 				}});
 
 		if(!adjacent){//tile is not adjacent so move selection
+			if(dest.owner!=game.player){
+				console.log("tried to select enemy tile");
+				return;
+			}
+			
 			print("moveing selection");	
 			source.container.style.filter="";
 			game.input.selected=tileRef;
@@ -431,4 +494,86 @@ function returnForce(tile,x){
 	tile.uncommitedForce+=x;
 	fcount.textContent=tile.uncommitedForce;
 }
+
+
+
+function orderBuild(type){
+	print("wants to build "+type);
+	if(game.input.selected==null){
+		alert("you must select an owned tile first");
+		return;
+	}
+	var tile=getTile(game.input.selected);
+	if(tile.building!=null){
+		alert("there is already a building here, it must be demolished first");
+		return;
+	}
+	var forcecost=0;
+	switch(type){
+		case 'city':
+			forcecost=10;
+			if (tile.uncommitedForce<10){
+				alert("you need at least 10 units to build a city");
+				return;
+			}
+			var tocheck=get_adjacency(game.input.selected);
+			var valid=true;
+			for(var i=0;i<tocheck.length;i++){
+				var tile=getTile(tocheck[i]);
+				
+				if(tile.owner!=game.player && tile.owner!=null || tile.building=="city"){
+					
+					var valid=false;
+				}
+			}
+			if(!valid){
+				alert("surrounding tiles must be free of enemies and cities");
+				return;
+			}			
+		break;
+		case 'wall':
+			forcecost=5;
+			if(tile.uncommitedForce<5){
+				alert("you need at least 5 units to build a wall");
+				return;
+			}
+		break;
+		case 'camp':
+			forcecost=7;
+			if(tile.uncommitedForce<7){
+				alert("you need at least 7 units to build a camp");
+			}
+		break;
+	}
+	print("building allowed ");
+	game.players[game.player].orders.build.push({type:type,tile:game.input.selected});
+	tile.uncommitedForce-=forcecost;
+	//print(tile.uncommitedForce)
+	tile.container.querySelector(".fcount").textContent=tile.uncommitedForce;
+	var gear =document.createElement('img');
+	gear.src="img/gear.png";
+	gear.style.position="absolute";
+	gear.style.zIndex="50";
+	tile.container.appendChild(gear);
+
+}
+
+function razeOrder(){
 	
+	if(game.input.selected==null){
+		alert("you must select a tile with a controlled building and present units");
+		return;
+	}
+	var tile=getTile(game.input.selected);
+	if(tile.building==null){
+		alert("you can only raze buildings");
+		return;
+	}	
+	game.players[game.player].orders.raze.push({tile:game.input.selected});
+	var fire =document.createElement('img');
+	fire.src="img/fire.png";
+	fire.style.position="absolute";
+	fire.style.zIndex="50";
+	tile.container.appendChild(fire);
+		
+}

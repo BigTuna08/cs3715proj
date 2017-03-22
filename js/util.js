@@ -111,15 +111,19 @@ var tileDim=[0,0];
  
  
 //get offset of coordinates of adjacent tiles
-function get_adjacency(tileRef){
+//filter: remove offmap coordinates
+function get_adjacency(tileRef,filter){
+	if(filter==undefined)filter=true;
 	//east clockwise to northeast, even/odd rows
 	var neighbours=[[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
 				[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]];
 	var ret= neighbours[tileRef[1]%2].map((e)=>{return add(e,tileRef)});
-	for(var i=0;i<ret.length;i++){
-		if(ret[i][0]<0 || ret[i][0]>tileDim[0] ||
-		   ret[i][1]<0 || ret[i][1]>tileDim[1]){
-			ret.splice(i--,1);
+	if(filter){
+		for(var i=0;i<ret.length;i++){
+			if(ret[i][0]<0 || ret[i][0]>tileDim[0] ||
+			   ret[i][1]<0 || ret[i][1]>tileDim[1]){
+				ret.splice(i--,1);
+			}
 		}
 	}
 	return ret

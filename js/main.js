@@ -113,34 +113,149 @@ function processNewMoves(info){
 			game.map.tiles[m.tile[1]][m.tile[0]].building=null;
 	})});
 
+	
+	print(info.players);
+	
+	game.map.tiles.forEach((e,i)=>{
+		e.force=e.uncommitedForce;
+	});
+	
+	
 	//calculate new forces, first check for collisions
 	info.players.forEach((e)=>{
-		e.moveset.movement.forEach((m)=>{
-			var src=getTile(m.source);
-			var dest=getTile(m.dest);
+		console.log("checking for collisions for "+e.playername);
+		e.moveset.movement.forEach((m,i)=>{
+			print(m);
+			var src=m.source;
+			var dest=m.dest;
 			var force=m.force;
-			var target=dest.owner;
+			var target=getTile(dest).owner;
+			console.log("target "+target);
 			info.players.some((e2)=>{
+				
+				print(e2.playername);
 				if(e2.playername==target){
-					e2.moveset.movement.some((m2)=>{
+					print("names good");
+					e2.moveset.movement.some((m2,j)=>{
+						//print(m);
+						print(m2);
+						console.log(m2.source,dest, m2.dest,src);
 						if(m2.source.isEqual(dest) && m2.dest.isEqual(src)){
 							//cancel forces and construct new order
 							console.log("forces met at edge");
-							
+							if(m.force==m2.force){
+								e.moveset.movement[j]=null;
+								e2.moveset.movement[j]=null;
+							}
+							var atk=m.force;
+							var atk2=m2.force;
+							var rem=cancelForces(atk,atk2,false);
+
+							if(m.force>m2.force){
+								m.force=rem;
+								e2.moveset.movement[j]=null;
+							}else{
+								m2.force=rem;
+								e.moveset.movement[j]=null;
+							}
+							return true;
 						}
 					});
-					return true
+					
 				}
 			});
+			//add force to temp tile structure
+			
 		});
 			
-			//game.map.tiles[m.tile[1]][m.tile[0]].building=null;
+			
 	});
 	
-	//clear temporary data
+	//resolve temp tile structures
+	
+	
+	//bad bad bad bad very wrong rewrite this
+	/*
+	info.players.forEach((e)=>{
+		console.log("processing tile combat for "+e.playername);
+		e.moveset.movement.forEach((m,i)=>{
+			if(m==null)return;
+			//var src=m.source;
+			var targ=getTile(m.dest);
+			if(targ.secondLargest!=undefined){
+				if(m.force<targ.secondLargest){
+					//no effect, outclassed
+					e.moveset.movement[i]=null;
+					return;
+				}else{
+					targ.secondLargest=m.force;
+					m.force=Math.pow(Math.pow(m.force,1.5)-Math.pow(targ.secondLargest,1.5),2/3);
+				}
+			}
+			var atk=m.force;
+			var def=targ.uncommitedForce;
+			if(atk>def){
+				//attacker victorious
+				targ.secondLargest=Math.max(targ.secondLargest,targ.uncommitedForce);
+				targ.force=Math.pow(Math.pow(atk,1.5)-Math.pow(def,1.5),2/3);
+				targ.owner=e.playername;
+			}else{
+				//defender victorious
+				targ.secondLargest=Math.max(targ.secondLargest,atk);
+				targ.force=Math.pow(Math.pow(def,1.5)-Math.pow(atk,1.5),2/3);
+				
+			}
+			console.log("end result on targ");
+			print(targ);
+		});
+	});
+	*/
+	//check for nulls
+	var usedPop={};
+	var toPopulate=[];
+	var pops={};
+	var campNums={};
+	//clear temporary data and count pop and mark camps, and reset force
+	game.map.tiles.forEach((row)=>{
+		row.forEach((e)=>{
+			if(e.owner!=null){
+				if(usedPop[e.owner]==undefined)
+					usedPop[e.owner]=0;
+				usedPop[e.owner]+=e.force;
+			}
+			if(pops[e.owner]==undefined)
+				pops[e.owner]=0;
+			if(e.building=="city"){
+				pops[e.owner]+=10;
+			}else if(e.building=="camp"){
+				toPopulate.push(m);
+				if(campNums[e.owner]==undefined)
+					campNums[e.owner]=0;
+				campNums[e.owner]++;
+			}
+			e.secondLargest=undefined;
+		});
+	});
 	
 	//add forces from existing buildings
+	toPopulate.forEach((e)=>{
+		var newForce=Math.round((pops[e.owner]-usedPop[e.owner])/2)/campNums[e.owner];
+		e.force+=newForce;
+	});
 	
+	game.map.tiles.forEach((row)=>{
+		row.forEach((e)=>{
+			print(e);
+			if(e.force==0 && e.building==null){
+				e.owner=null;
+				
+			}else{
+				e.uncommitedForce=e.force
+				console.log("updating stuff");
+				console.log(e.uncommitedForce,e.force);
+			}
+		});
+	});
 	
 	
 	//build buildings
@@ -171,6 +286,16 @@ function processNewMoves(info){
 	sendRequest("action=uploadmap&mapdata="+mapdata);
 }
 
+
+function cancelForces(atk,def,bonus){
+	if(bonus)bonus=1.5;
+	else bonus=1;
+	var rem=Math.round(Math.pow(Math.pow(atk,1.5)-Math.pow(def,1.5),2/3));
+	if(atk>def)
+		return atk;
+	else
+		return def/bonus
+}
 
 function init(){
 	
@@ -353,6 +478,7 @@ function handleClick(tileRef){
 		}
 		print("selecting a source tile");
 		game.input.selected=tileRef;
+		print(getTile(tileRef));
 		highlight(tileRef);
 	}else if(game.input.selected.isEqual(tileRef)){//deselect source
 		print("deselecting");
@@ -365,9 +491,11 @@ function handleClick(tileRef){
 		//determine adjacency
 		var adjacent=false;
 		var dir=0;
-		get_adjacency(game.input.selected).some(
+		get_adjacency(game.input.selected,false).some(
 			(e,i)=>{
+				console.log("checking "+e+"=="+destRef);
 				if(e.isEqual(tileRef)){
+					
 					adjacent=true;
 					dir=i;
 					return true;
@@ -439,7 +567,7 @@ function handleClick(tileRef){
 		}
 		
 		returnForce(source,-force);
-				
+		console.log("direction "+dir);
 		//CREATE GRAPHIC
 		var container=document.createElement('div');
 		var indicator=document.createElement("img");

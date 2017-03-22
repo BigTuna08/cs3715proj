@@ -1,43 +1,8 @@
-TODO in decreasing importance
-- processing moves and updating map
-- turn timer both on client and server
-- saving the game to the db permanently
-- loading a saved game
-
-GAME LOGIC FLOW SKETCH
-timer end turn on client (visual only, automatically submits when done)
-manually click end turn//done
-	submit moves://done
-		SERVER
-		update individual player turn number (so turn=1 means stored moves were for turn 0)//done
-		store moves for player//done
-		CLIENT
-		starts polling for other players moves//done
-			SERVER
-			server checks all player turn numbers are equal//done
-			if timer expired+seconds for autosubmit passed, set moves to none for absent players (probably closed browser)
-				and increment their turn counters
-			if all equal sends move set
-				and increments lobby turn//done
-				and sets turnstarttime to current time
-			if not responds wait
-			CLIENT
-			if not waiting
-			recieves moveset//done
-			recieves turnstarttime (because if they guess it'll be off by a few seconds depending on polling)
-			updates game map//99% of code here
-			if lose condition notify resignation
-				SERVER
-				removes player from game
-				set player  activity to none
-				if only one player remains
-					delete lobby, unregister lobby, 
-			if win condition alert("u r winner")//no need to tell server they'll figure it out
-			sends map to server//duplicated by nnumber of players but that's ok//done
-				SERVER
-				server stores map in lobby to be used for reconnecting players//done
-
-
+timer for auto move submit
+saving //do we even want this?
+lobby, browser, and sign on pages could use some style
+game background image has fixed dimensions but should be dynamic (it has to be there to make the imagemap work)
 
 GRAPHICS:
 make movement arrows more visible
+

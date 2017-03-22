@@ -95,11 +95,10 @@ if(!isset($_POST['action'])){
 			$proposed_name=$conn->real_escape_string($_POST['name']);
 			//check if lobby exists
 			$query="SELECT * FROM lobby WHERE name='".$proposed_name."'";
-			echo $query;
 			if(count($conn->query($query)->fetch_all(MYSQLI_ASSOC))==0){
 				//lobby does not exist
 				
-				$params=['seed'=>123456,'dim'=>[4,4],'maptype'=>'random'];
+				$params=['seed'=>rand(),'dim'=>[4,4],'maptype'=>'random'];
 				$params=json_encode($params);
 				$params=$conn->real_escape_string($params);
 				
@@ -146,6 +145,14 @@ if(!isset($_POST['action'])){
 		
 			$page='lobby';
 			$table_name='lobby_'.$_POST['lobby'];
+			$id=$_POST['lobby'];
+			$query="SELECT * FROM lobby WHERE id=$id";
+			if($conn->query($query)->fetch_all(MYSQLI_ASSOC)[0]['ingame']){
+				$page_data['notification']='game already started, you just missed them';
+				$page='browser';
+				break;
+			}
+			
 			
 			//remember that player is currently waiting
 			$stmt=$conn->prepare("UPDATE player SET activity=? WHERE name=?");
@@ -157,12 +164,10 @@ if(!isset($_POST['action'])){
 			
 			//insert player into lobby
 			$query="INSERT INTO $table_name (playername,ready,changed,turn) VALUES ('$playername',FALSE,TRUE,0)";
-			echo $query;
 			$conn->query($query) or die($conn->error);
 			
 			//set changed bit
 			$query="UPDATE $table_name SET changed=TRUE";
-			echo $query;
 			$conn->query($query) or die($conn->error);
 			
 		break;
@@ -261,6 +266,11 @@ if(!isset($_POST['action'])){
 			
 			$query="UPDATE player SET activity='game $id' WHERE name='$playername'";
 			$conn->query($query) or die($conn->error);
+			
+			$query="UPDATE lobby SET ingame=TRUE where id=$id";
+			$conn->query($query) or die($conn->error);
+
+			
 			return;
 		break;
 		case 'loadgamedata':
@@ -299,7 +309,11 @@ if(!isset($_POST['action'])){
 			cout("hi");	
 			//check what the next turn number is
 			$query="SELECT * FROM $table_name WHERE playername='$playername'";
-			cout($query);	
+			cout($query);
+			if(!($result=$conn->query($query))){
+				echo "error";
+				return;
+			}
 			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
 			$wantedturn=$result['turn'];
 			
@@ -356,6 +370,39 @@ if(!isset($_POST['action'])){
 			$conn->query($query) or die($conn->error);
 			
 		break;
+		case 'notifyquit':
+			$id=$_POST['lobby_id'];
+			$table_name='lobby_'.$id;
+			$query="DELETE FROM $table_name WHERE playername='$playername'";
+			cout($query);
+			$conn->query($query) or die($conn->error);
+
+			$query="UPDATE player SET activity='' WHERE name='$playername'";
+			cout($query);
+			$conn->query($query) or die($conn->error);
+			
+			$query="SELECT * FROM $table_name";
+			cout($query);
+			$result=$conn->query($query);
+			
+			if(count($rows=$result->fetch_all(MYSQLI_ASSOC))==1){
+				cout("deleting game");
+				$lastplayer=$rows[0]['playername'];
+				$query="UPDATE player SET activity='' WHERE name='$lastplayer'";
+				cout($query);
+				$conn->query($query);
+				cout($query);
+				
+				$query="DROP TABLE $table_name";
+				cout($query);
+				$conn->query($query);
+				
+				$query="DELETE FROM lobby WHERE id=$id";
+				cout($query);
+				$conn->query($query);
+
+			}
+		break;
 		default:
 			$page='login';
 			$page_data['notification']='congratulations, you found a bug';
@@ -381,40 +428,8 @@ if($page!="none"){
 			<?PHP
 		break;
 		case 'browser':
-			$stmt=$conn->prepare("SELECT * FROM lobby");
-			$stmt->execute();
-			$result=$stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-			?>
+			include('page/browser.php');
 			
-			<table border>
-			<tr><td colspan=2>LOBBIES</td></tr>
-			<tr><td>name</td><td></td></tr>
-			<?PHP
-			foreach($result as $lobby){
-				?>
-				<tr>
-				
-				<form method="post" action="index.php?playername=<?PHP echo $playername?>">
-					<input type="hidden" name="action" value="join">
-					<input type="hidden" name="lobby" value="<?PHP echo $lobby['id']?>">
-					<td><div><?PHP print_r($lobby) ?></div></td>
-					<td><input type="submit" value="JOIN"></td>
-				</form>
-				</tr>
-				<?PHP
-			}
-			?>
-			</table>
-			<?PHP
-			if(isset($page_data['notification']))echo $page_data['notification'];
-			?>
-			
-			<form method="POST" action="index.php?playername=<?PHP echo $playername?>">
-				<input type="hidden" name="action" value="newlobby">
-				<input type="text" name="name" value="unique name">
-				<input type="submit" value="New Lobby">
-			</form>
-			<?PHP
 		break;
 		case 'lobby':
 			include('page/lobby.php');

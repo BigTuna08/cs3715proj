@@ -1,19 +1,8 @@
-action: notifyendturn
+action: pollendturn
+ng them where they belong
 action: pollendturn
 hi
-SELECT * FROM lobby_10 WHERE playername='p4'
-11
-SELECT * FROM lobby_10 WHERE turn!=11
-sendmoves: 1
-{"players":[{"playername":"p3","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[4,1],\"dest\":[5,1],\"force\":6,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"11"},{"playername":"p4","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"11"}],"lobby":[]}
-new connection from player:'p4'
-action: uploadmap
-action: pollendturn
-hi
-SELECT * FROM lobby_10 WHERE playername='p3'
-11
-SELECT * FROM lobby_10 WHERE turn!=11
-sendmoves: 1
-{"players":[{"playername":"p3","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[4,1],\"dest\":[5,1],\"force\":6,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"11"},{"playername":"p4","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"11"}],"lobby":[]}
-new connection from player:'p3'
-action: uploadmap
+SELECT * FROM lobby_10 WHERE playername='p2'
+SELECT * FROM lobby_10 WHERE playername='p2'
+new connection from player:'l'
+player is lost, putting them where they belong

@@ -22,6 +22,10 @@ function handleGameData(info){
 			
 			};
 	});
+	var deg=game.players[game.player].colour;
+	id("buttonrow").style.filter="hue-rotate("+deg+"deg)";
+	
+	
 	tileDim=info.lobby.param.dim;
 	//set timer to remaining time
 	if(info.lobby.turn==0){
@@ -40,6 +44,7 @@ function handleGameData(info){
 		game.map=JSON.parse(info.lobby.map);
 		drawMap();
 	}
+	
 }
 
 
@@ -73,6 +78,8 @@ function endTurn(){
 		xhr.onreadystatechange=function(){
 			if(xhr.readyState==4){
 				if(xhr.response=="wait"){
+				}else if(xhr.response=="error"){
+					win();
 				}else if(xhr.response!=""){
 					print("recieving moves");
 					var info=JSON.parse(xhr.response);;
@@ -93,53 +100,77 @@ function endTurn(){
 
 //function PollEndTurn()
 function processNewMoves(info){
+	
+	
+	
 	print("processing moves");
 	
-	
-	//game.map.tiles[0][0].force+=1;
-	
 	info.players.forEach((e,i)=>{
-
 		info.players[i].moveset=JSON.parse(e.moveset);
 		
 	});
-	
+	console.log("info:");
 	print(info);
 	
 	//do raze orders
 	info.players.forEach((e)=>{
 		e.moveset.raze.forEach((m)=>{
+			console.log("razing");
 			print(getTile(m.tile));
 			game.map.tiles[m.tile[1]][m.tile[0]].building=null;
 	})});
-
 	
-	print(info.players);
+	info.players.forEach((e)=>{
+		if(e.playername==game.player)return;
+		e.moveset.movement.forEach((m)=>{
+			getTile(m.source).uncommitedForce-=m.force;
+			console.log("deducting force");
+			print(getTile(m.source));
+		})
+	})
 	
-	game.map.tiles.forEach((e,i)=>{
-		e.force=e.uncommitedForce;
+	info.players.forEach((e)=>{
+		if(e.playername==game.player)return;
+		e.moveset.build.forEach((m)=>{
+			var cost=game.buildingCosts[m.type];
+			console.log("deducting force for build");
+			getTile(m.tile).uncommitedForce-=cost;
+		})
+	})
+	
+	
+	game.map.tiles.forEach((row)=>{
+		row.forEach((tile)=>{
+			tile.force=tile.uncommitedForce;
+		});
 	});
 	
-	
+	console.log(info);
+	print(info);
 	//calculate new forces, first check for collisions
 	info.players.forEach((e)=>{
 		console.log("checking for collisions for "+e.playername);
+		print(e);
 		e.moveset.movement.forEach((m,i)=>{
+			if(m==null)return;
+			print(e);
 			print(m);
 			var src=m.source;
 			var dest=m.dest;
 			var force=m.force;
 			var target=getTile(dest).owner;
+			if(target==null){
+				console.log("moving to unowned tile");
+				return;
+			}
 			console.log("target "+target);
 			info.players.some((e2)=>{
 				
-				print(e2.playername);
 				if(e2.playername==target){
 					print("names good");
 					e2.moveset.movement.some((m2,j)=>{
-						//print(m);
-						print(m2);
-						console.log(m2.source,dest, m2.dest,src);
+						if(m2==null)return true;
+						
 						if(m2.source.isEqual(dest) && m2.dest.isEqual(src)){
 							//cancel forces and construct new order
 							console.log("forces met at edge");
@@ -149,8 +180,8 @@ function processNewMoves(info){
 							}
 							var atk=m.force;
 							var atk2=m2.force;
-							var rem=cancelForces(atk,atk2,false);
-
+							var rem=Math.round(Math.pow(Math.abs(Math.pow(atk,1.5)-Math.pow(atk2,1.5)),2/3));
+							
 							if(m.force>m2.force){
 								m.force=rem;
 								e2.moveset.movement[j]=null;
@@ -166,94 +197,198 @@ function processNewMoves(info){
 			});
 			//add force to temp tile structure
 			
+		console.log(" done checking for collisions for "+e.playername);
 		});
-			
 			
 	});
 	
 	//resolve temp tile structures
-	
-	
-	//bad bad bad bad very wrong rewrite this
-	/*
 	info.players.forEach((e)=>{
-		console.log("processing tile combat for "+e.playername);
 		e.moveset.movement.forEach((m,i)=>{
-			if(m==null)return;
-			//var src=m.source;
-			var targ=getTile(m.dest);
-			if(targ.secondLargest!=undefined){
-				if(m.force<targ.secondLargest){
-					//no effect, outclassed
-					e.moveset.movement[i]=null;
-					return;
+			if(m==null)return true;
+			print("moving move ");
+			var tile=getTile(m.dest)
+			if(tile.temp==undefined){
+				console.log("creating temp structure");
+				tile.temp={};
+			}
+			if(tile.owner!=null && tile.temp[tile.owner]==undefined){
+				console.log("adding owner as candidate for new ownership");
+				addToSet(tile.owner,tile.force);
+			}
+			addToSet(e.playername,m.force);
+			
+			function addToSet(name,force){
+				var actual=force;
+				if(name==tile.owner && tile.building=="wall"){
+					force*=1.5;
+				}
+				console.log(name,force);
+
+				if(tile.temp[name]!=undefined){
+					console.log("adding reinforcements");
+					tile.temp[name].force+=force;
+					tile.temp[name].actual+=actual;
+					print(tile.temp);
 				}else{
-					targ.secondLargest=m.force;
-					m.force=Math.pow(Math.pow(m.force,1.5)-Math.pow(targ.secondLargest,1.5),2/3);
+					console.log("setting up combat");
+					tile.temp[name]={};
+					tile.temp[name].force=force;
+					tile.temp[name].actual=actual;
+					print(tile.temp);
 				}
 			}
-			var atk=m.force;
-			var def=targ.uncommitedForce;
-			if(atk>def){
-				//attacker victorious
-				targ.secondLargest=Math.max(targ.secondLargest,targ.uncommitedForce);
-				targ.force=Math.pow(Math.pow(atk,1.5)-Math.pow(def,1.5),2/3);
-				targ.owner=e.playername;
-			}else{
-				//defender victorious
-				targ.secondLargest=Math.max(targ.secondLargest,atk);
-				targ.force=Math.pow(Math.pow(def,1.5)-Math.pow(atk,1.5),2/3);
+			
+		})
+	})
+	
+	game.map.tiles.forEach((row)=>{
+		row.forEach((tile)=>{
+			if(tile.temp!=undefined){
+				console.log("resolving tile");
+				print(tile);
+				var maxKey=null;
+				var max=0;
+				var actual=0;
+				var maxKey2=null;
+				var max2=0;
+				var actual2=0;
+				Object.keys(tile.temp).forEach((key)=>{
+					console.log("checking",tile.temp[key].force);
+					if(tile.temp[key].force>max){
+						maxKey2=maxKey;
+						max2=max;
+						actual2=actual;
+						console.log(tile.temp[key].force);
+						maxKey=key;
+						max=tile.temp[key].force;
+						actual=tile.temp[key].actual;
+					}else if(tile.temp[key].force>max2){
+						maxKey2=key;
+						max2=tile.temp[key].force;
+						actual2=tile.temp[key].actual;
+					}
+				});
+				
+				console.log(maxKey,max,actual,maxKey2,max2,actual2)
+				
+				
+				
+				if(max==max2){
+					//neutral, everybody gone
+					tile.owner=null;
+					tile.force=0;
+					if(tile.building=="city")tile.buildingData.size=0;
+					tile.uncommitedForce=0;
+				}
+				print(max);
+				print(maxKey);
+				print(actual);
+				print(actual2);
+				var diff=max;
+				if(max2!=0){
+					console.log("resolving combat");
+					print(diff);
+					var diff=Math.round(Math.pow(Math.pow(max,1.5)-Math.pow(max2,1.5),2/3));
+				}
+				var rem=diff;
+				if(tile.owner==maxKey && tile.building=="wall"){
+					rem=Math.round(diff/max * actual);
+				}
+				//var actual=
+				print(maxKey);
+				print(diff);
+				if(tile.owner!=maxKey){
+					if(tile.building=="city")tile.buildingData.size=0;
+				}
+				tile.owner=maxKey;
+				tile.force=rem;
+				tile.uncommitedForce=rem;
+				console.log("done");
+				print(tile);
+				tile.temp=undefined;
 				
 			}
-			console.log("end result on targ");
-			print(targ);
-		});
-	});
-	*/
+		})
+	})
+	
+
 	//check for nulls
 	var usedPop={};
 	var toPopulate=[];
 	var pops={};
 	var campNums={};
+	
+	print(game);
+	
+	
 	//clear temporary data and count pop and mark camps, and reset force
 	game.map.tiles.forEach((row)=>{
 		row.forEach((e)=>{
 			if(e.owner!=null){
-				if(usedPop[e.owner]==undefined)
-					usedPop[e.owner]=0;
-				usedPop[e.owner]+=e.force;
-			}
-			if(pops[e.owner]==undefined)
-				pops[e.owner]=0;
-			if(e.building=="city"){
-				pops[e.owner]+=10;
-			}else if(e.building=="camp"){
-				toPopulate.push(m);
-				if(campNums[e.owner]==undefined)
-					campNums[e.owner]=0;
-				campNums[e.owner]++;
-			}
-			e.secondLargest=undefined;
+				if(e.force==0){
+					e.owner=null;
+				}else{
+					if(usedPop[e.owner]==undefined){
+						console.log("starting counting pop for ",e.owner);
+						usedPop[e.owner]=0;
+					}
+					console.log("adding ",e.force);
+					usedPop[e.owner]+=e.force;
+					
+					if(e.building=="city"){
+						print(e);
+						if(pops[e.owner]==undefined)
+							pops[e.owner]=0;
+						pops[e.owner]+=e.buildingData.size;
+						if(e.buildingData.size<30)e.buildingData.size+=3;
+					}else if(e.building=="camp"){
+						toPopulate.push(e);
+						if(campNums[e.owner]==undefined)
+							campNums[e.owner]=0;
+						campNums[e.owner]++;
+					}
+				}
+				
+			}/*
+		print(usedPop);
+		print(toPopulate);
+		print(pops);
+		print(campNums);*/
 		});
+
 	});
+	console.log("pop data");
+	print(usedPop);
+	print(toPopulate);
+	print(pops);
+	print(campNums);
 	
-	//add forces from existing buildings
+	var quit=false;
+	if(usedPop[game.player]==undefined){
+		quit=true;
+	}
+	
+	var win=false;
+	if(!quit){
+		win=true;
+		Object.keys(usedPop).forEach((e)=>{
+			if(e!=game.player)
+				win=false;
+		})
+	}
+	
+	//add forces from unused pop
 	toPopulate.forEach((e)=>{
-		var newForce=Math.round((pops[e.owner]-usedPop[e.owner])/2)/campNums[e.owner];
+		var newForce=Math.round(((pops[e.owner]-usedPop[e.owner])/campNums[e.owner])/2);
+		console.log("force new",newForce);
+		if(isNaN(newForce)||newForce<0)return;
 		e.force+=newForce;
 	});
 	
 	game.map.tiles.forEach((row)=>{
 		row.forEach((e)=>{
-			print(e);
-			if(e.force==0 && e.building==null){
-				e.owner=null;
-				
-			}else{
-				e.uncommitedForce=e.force
-				console.log("updating stuff");
-				console.log(e.uncommitedForce,e.force);
-			}
+				e.uncommitedForce=e.force;
 		});
 	});
 	
@@ -268,7 +403,9 @@ function processNewMoves(info){
 				print("constructing");
 				print(getTile(m.tile));
 				game.map.tiles[m.tile[1]][m.tile[0]].building=m.type;
-				
+				if(m.type=="city"){
+					getTile(m.tile).buildingData.size=1;
+				}
 			}})});
 	
 	
@@ -279,22 +416,32 @@ function processNewMoves(info){
 	
 	//refresh entire map, I don't know how this doesn't flicker, must be magic
 	drawMap();
-	id("endturnbutton").disabled=false;
 	game.input.selected=null;
+	
+	id("endturnbutton").disabled=false;
+	if(quit){
+		sendRequest('action=notifyquit');
+		alert('you have no more forces, returning to the lobby');
+		setTimeout(()=>{window.location.replace('index.php?playername='+game.player)},1000);
+		id("endturnbutton").disabled=true;
+	}
+	
+	if(win){
+		win();
+		id("endturnbutton").disabled=true;
+	}
+	
+	
+	
 	//send map back
 	var mapdata=encodeURI(JSON.stringify(game.map));
 	sendRequest("action=uploadmap&mapdata="+mapdata);
 }
 
 
-function cancelForces(atk,def,bonus){
-	if(bonus)bonus=1.5;
-	else bonus=1;
-	var rem=Math.round(Math.pow(Math.pow(atk,1.5)-Math.pow(def,1.5),2/3));
-	if(atk>def)
-		return atk;
-	else
-		return def/bonus
+function win(){
+	alert('there is nothing left to do, you must retire now');
+	window.location.replace('index.php?playername='+game.player);
 }
 
 function init(){
@@ -304,16 +451,19 @@ function init(){
 		input:{selected:null},
 		map:{x:0,y:0,tiles:null},
 		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},grass:"grass",dirt:"dirt"},
-		building:{path:(name)=>{return "img/building/"+name+".png"},wall:"wall",city:"city"},
+		building:{path:(name)=>{return "img/building/"+name+".png"},wall:"wall",city:"city",camp:"camp"},
 		gfx:{tileDim:[64,74],grid:id("main")},
 		players:{},
 		numPlayers:0,
-		player:""};
+		player:"",
+		buildingCosts:{"city":10,"wall":5,"camp":7}};
 
 	//first copy the variables needed to bootstrap the rest of the game data
 	game.player=playername;
 	game.lobby=lobby_id;
 	loadGameData();
+
+	
 }
 
 
@@ -323,25 +473,102 @@ function init(){
 function generateMap(params){
 	var seed=params.seed;
 	var pick=Pick(Prng(seed));
+	
+	//weights on W should add to 100
+	function pickWeighted(W){
+		var x=pick(0,100);
+		var val=null;
+		W.some((e)=>{
+			x-=e.P;
+			if(x<0){
+				val=e.val;
+				return true
+			}
+		});
+		return val;
+	}
+	
+	
+	
+	var forcePerPlayer=params.dim[0]*params.dim[1];
+	
+	var counts=Object.keys(game.players).map((e)=>{
+		return {name:e,toplace:forcePerPlayer}
+	});
+	
+	
+	//placement probabilites
+	var structP=[{P:7,val:"city"},{P:16,val:"wall"},{P:5,val:"camp"},{p:72,val:"none"}];
+	
 	game.map.x=parseInt(params.dim[0]);
 	game.map.y=parseInt(params.dim[1]);
 	var tiles=Array(game.map.y);
 	for(var y=0;y<tiles.length;y++){
 		tiles[y]=Array(game.map.x);
 		for(var x=0;x<tiles[y].length;x++){
-			var force=pick(0,20);
+			//var force=pick(0,20);
 			tiles[y][x]={terrain:game.terrain[["grass","dirt"][pick(0,1)]],
-					building:game.building[["city","wall"][pick(0,1)]],
-					owner:Object.keys(game.players)[pick(0,game.numPlayers-1)],
-					force:force,
-					uncommitedForce:force
+					//building:game.building[["city","wall"][pick(0,1)]],
+					owner:null,
+					force:0,
+					uncommitedForce:0
 				};
-			if(tiles[y][x].building=="city"){
-				tiles[y][x].buildingData={pop:pick(5,10),available:pick(5,10)};
+			var tile=tiles[y][x];//getTile([x,y]);
+			var build=null;
+			if((build=pickWeighted(structP))!="none"){
+				tile.building=build;
+				if(build=="city"){
+					tile.buildingData={size:0};
+				}
+				
 			}
-			
 		}
 	}
+	game.map.tiles=tiles;
+	
+	print(counts);
+	var done=false;
+	var p=0;
+	var unitSize=5;
+	var unitVariation=2;
+	while(!done){
+		
+		var toplace=Math.min(unitSize+pick(0,unitVariation),counts[p].toplace);
+		counts[p].toplace-=toplace;
+		
+		while(true){
+			
+			var x=pick(0,game.map.x-1);
+			var y=pick(0,game.map.y-1);
+			print([x,y]);
+			var t=getTile([x,y]);
+			print("ok");
+			if(t.owner!=null && t.owner!=counts[p].name){
+				continue;
+			}else{
+				t.force+=toplace;
+				t.owner=counts[p].name;
+				t.uncommitedForce=t.force;
+				break;
+			}
+		}
+		//pick another player or quit if all placed
+		while(true){
+			if(counts.length==0){
+				done=true;
+				break;
+			}else{
+				p=pick(0,counts.length-1);
+				if(counts[p].toplace>0){
+					break;
+				}else{
+					counts.splice(p,1);
+				}
+			}
+		}
+		
+	}
+	
 	game.map.tiles=tiles;
 }
 
@@ -384,18 +611,22 @@ function drawMap(){
 			
 		
 			if(tile.building!=null){
+
 				var building=document.createElement('img');
 				building.style.position="absolute";
 				building.className="point-through";
 				building.style.zIndex="10";
 				building.src=game.building.path(tile.building);
-				building.style.filter="hue-rotate("+game.players[tile.owner].colour+"deg)";
+				if(tile.owner==null){
+					building.style.filter="grayscale(1)";
+				}else{
+					building.style.filter="hue-rotate("+game.players[tile.owner].colour+"deg)";
+					
+				}
 				container.appendChild(building);
-				
-				
 				if(tile.building=="city"){
 					var popCount=document.createElement('div');
-					var textNode=document.createTextNode(tile.buildingData.available+"/"+tile.buildingData.pop);
+					var textNode=document.createTextNode(tile.buildingData.size);
 					popCount.style.position="absolute";
 					popCount.style.width=game.gfx.tileDim[0]+"px";
 					popCount.style.top="35px";
@@ -466,22 +697,28 @@ function drawMap(){
 	
 }
 
-
+function resign(){
+	var y=confirm("are you sure you want to quit?");
+	
+	if(y){
+		endTurn();
+		setTimeout(()=>{},500);
+		sendRequest('action=notifyquit');
+	}
+	setTimeout(()=>{location.replace("index.php?playername="+game.player)},3000);
+}
 
 function handleClick(tileRef){
 	var dest=getTile(tileRef);
 	var destRef=tileRef;
 	if(game.input.selected==null){//select a source tile
 		if(dest.owner!=game.player){
-			print("can't select enemy tile");
 			return;
 		}
-		print("selecting a source tile");
 		game.input.selected=tileRef;
-		print(getTile(tileRef));
+		
 		highlight(tileRef);
 	}else if(game.input.selected.isEqual(tileRef)){//deselect source
-		print("deselecting");
 		unhighlight(tileRef);
 		game.input.selected=null;
 	}else {//selected a dest tile
@@ -507,28 +744,23 @@ function handleClick(tileRef){
 				return;
 			}
 			
-			print("moveing selection");	
 			source.container.style.filter="";
 			game.input.selected=tileRef;
 			highlight(tileRef);
 			return;
 		}
 		
-		print("calculating move");
 		while(true){
 			var force=Number(prompt("Force",0));
 			if(force>=0) break;
 
 		}
-		print("asked to move "+force+" units");
 		
 		//lookup conflicting moves
 		var simulIndex=-1;//a move in the same direction
 		var counterIndex=-1;//a move in the opposite direction
 		var existingOrder=orderArr.find(
 			(e,i)=>{
-				print("agadgs");
-				print("checking "+e);
 				if(e.source.isEqual(game.input.selected) && e.dest.isEqual(tileRef)){
 					simulIndex=i;
 					return true;
@@ -539,10 +771,7 @@ function handleClick(tileRef){
 			});
 			
 			
-		print("RAGAGAGH");
 		if(simulIndex!=-1){
-			print("move exists in this direction");
-			print(orderArr[simulIndex]);
 			
 			//Delete existing move
 			var cont=orderArr[simulIndex].container;
@@ -551,14 +780,15 @@ function handleClick(tileRef){
 			orderArr.splice(simulIndex,1);
 			
 		}else if(counterIndex!=-1){
-			print("move exists in opposite direction");
 			//Delete existing move
 			var cont=orderArr[counterIndex].container;
 			dest.container.removeChild(cont);
 			returnForce(dest,orderArr[counterIndex].force);
 			orderArr.splice(counterIndex,1);
 		}
+		print(force);
 		if(force==0){
+			print("heyo"); 	
 			//there should be no move in this direction now
 			return;
 		}
@@ -611,7 +841,6 @@ function handleClick(tileRef){
 
 //return or deduct from commited force, does not destroy anything
 function returnForce(tile,x){
-	print(tile);
 	if(tile.uncommitedForce+x>tile.force){
 		print("something went wrong");
 	}
@@ -627,11 +856,20 @@ function returnForce(tile,x){
 
 function orderBuild(type){
 	print("wants to build "+type);
+	
 	if(game.input.selected==null){
 		alert("you must select an owned tile first");
 		return;
 	}
 	var tile=getTile(game.input.selected);
+	if (game.players[game.player].orders.build.some((e)=>{
+		print("checking");
+		print(e);
+		if(e.tile.isEqual(game.input.selected)){
+			alert("you can't build two things at once in the same place");
+			return true;
+		}
+	})) return true;
 	if(tile.building!=null){
 		alert("there is already a building here, it must be demolished first");
 		return;

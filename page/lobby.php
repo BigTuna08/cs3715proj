@@ -27,6 +27,7 @@ function redisplay(info){
 		li.textContent="player "+e.playername;
 		ulist.appendChild(li);
 	});
+	if(info.players.length==1)waiting=true;
 	
 	id("title").textContent=info.lobby.name;
 	id("seed").value=params.seed;

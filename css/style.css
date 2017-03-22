@@ -32,7 +32,8 @@ button{
 	background:cyan;border-radius:4px;border:2px solid magenta
 }
 .endBtn{
-	margin-left:20px;background:grey;border-radius:4px;border:2px solid yellow
+	margin-left:10px;background:grey;border-radius:4px;border:2px solid yellow;
+	
 }
 button:hover{
 	background:white;

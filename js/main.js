@@ -63,20 +63,18 @@ function loadGameData(){
 	xhr.send("action=loadgamedata&lobby_id="+game.lobby+"&playername="+game.player);
 }
 
-
 var turns=0;
+var wantedturn=0;
 function endTurn(){
-	turns=1;
+	wantedturn++;
 	id("endturnbutton").disabled=true;
 	//disable button temporarily
 	var moveset=encodeURI(JSON.stringify(game.players[game.player].orders));
 	sendRequest("action=notifyendturn&moveset="+moveset);
 	function pollEndTurn(){
-		//print(endTurn);
 		var xhr=new XMLHttpRequest();
 		xhr.onreadystatechange=function(){
 
-			
 			if(xhr.readyState==4){
 				if(xhr.response=="wait"){
 					
@@ -85,10 +83,9 @@ function endTurn(){
 				}else if(xhr.response!=""){
 					
 					clearInterval(handle);
-					
-						var info=JSON.parse(xhr.response);;
-					turns--;
-					if(turns>=0){
+					var info=JSON.parse(xhr.response);;
+					if(wantedturn>turns){
+						turns++;
 						processNewMoves(info);
 					}
 				}

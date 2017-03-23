@@ -1,31 +1,110 @@
-sendmoves: 
-new connection from player:'p2'
-action: pollendturn
-layer:'p2'
 action: notifyendturn
+action: pollendturn
 asking for turn 5
-sendmoves: 1
-{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+sendmoves: 
 new connection from player:'p1'
 action: pollendturn
 asking for turn 5
 sendmoves: 1
-{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,3],\"dest\":[3,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,3],\"dest\":[2,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
 new connection from player:'p2'
 action: pollendturn
 asking for turn 5
 sendmoves: 1
-{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
-new connection from player:'p2'
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,3],\"dest\":[3,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,3],\"dest\":[2,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p1'
 action: pollendturn
 asking for turn 5
 sendmoves: 1
-{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,3],\"dest\":[3,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,3],\"dest\":[2,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p1'
+action: pollendturn
+asking for turn 5
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,3],\"dest\":[3,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,3],\"dest\":[2,2],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p1'
+action: uploadmap
+new connection from player:'p2'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p2'
+action: uploadmap
+new connection from player:'p1'
+new connection from player:'p1'
+action: notifyendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p2'
+action: notifyendturn
+action: pollendturn
+asking for turn 6
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,2],\"dest\":[3,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,2],\"dest\":[2,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"}],"lobby":[]}
+new connection from player:'p2'
+action: pollendturn
+asking for turn 6
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,2],\"dest\":[3,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,2],\"dest\":[2,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"}],"lobby":[]}
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,2],\"dest\":[3,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,2],\"dest\":[2,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"}],"lobby":[]}
+new connection from player:'p2'
+action: pollendturn
+asking for turn 6
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[3,2],\"dest\":[3,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[{\"source\":[2,2],\"dest\":[2,1],\"force\":2,\"container\":{\"zIndex\":\"50\"}}],\"build\":[],\"raze\":[]}","turn":"6"}],"lobby":[]}
 new connection from player:'p2'
 action: uploadmap
 new connection from player:'p1'
 action: pollendturn
-asking for turn 6
+asking for turn 7
 sendmoves: 
 new connection from player:'p1'
 action: uploadmap

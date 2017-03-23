@@ -1,8 +1,31 @@
+sendmoves: 
+new connection from player:'p2'
 action: pollendturn
-ng them where they belong
+layer:'p2'
+action: notifyendturn
+asking for turn 5
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p1'
 action: pollendturn
-hi
-SELECT * FROM lobby_10 WHERE playername='p2'
-SELECT * FROM lobby_10 WHERE playername='p2'
-new connection from player:'l'
-player is lost, putting them where they belong
+asking for turn 5
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p2'
+action: pollendturn
+asking for turn 5
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p2'
+action: pollendturn
+asking for turn 5
+sendmoves: 1
+{"players":[{"playername":"p1","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"},{"playername":"p2","ready":"1","changed":"0","moveset":"{\"movement\":[],\"build\":[],\"raze\":[]}","turn":"5"}],"lobby":[]}
+new connection from player:'p2'
+action: uploadmap
+new connection from player:'p1'
+action: pollendturn
+asking for turn 6
+sendmoves: 
+new connection from player:'p1'
+action: uploadmap

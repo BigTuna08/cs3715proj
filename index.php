@@ -306,21 +306,22 @@ if(!isset($_POST['action'])){
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$sendmoves=false;
-			cout("hi");	
+			
 			//check what the next turn number is
-			$query="SELECT * FROM $table_name WHERE playername='$playername'";
-			cout($query);
+			$query="SELECT * FROM lobby WHERE id='$id'";
+			//cout($query);
 			if(!($result=$conn->query($query))){
 				echo "error";
 				return;
 			}
+		
 			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
-			$wantedturn=$result['turn'];
-			
-			cout($wantedturn);
+			$wantedturn=$result['turn']+1;
+				cout("asking for turn ".$wantedturn);
+			//cout($wantedturn);
 			//check that everyone has the same turn number
 			$query="SELECT * FROM $table_name WHERE turn!=$wantedturn";
-			cout($query);	
+			//cout($query);	
 			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
 			if(sizeof($result)==0){
 				//everyone is on the same page

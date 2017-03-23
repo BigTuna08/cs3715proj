@@ -5,7 +5,7 @@ $conn=getConnect();
 function setNotifyBits($lobby){
 	global $conn;
 	$query="UPDATE $lobby SET changed=TRUE";
-	$conn->query($query) or die($conn->error);
+	$conn->query($query) or cout($conn->error);
 }
 
 function cout($s){
@@ -20,7 +20,7 @@ $page_data=[];
 $playername='';
 if(isset($_GET['playername']))$playername=$_GET['playername'];
 if(isset($_POST['playername']))$playername=$_POST['playername'];
-cout("new connection from player:'$playername'");
+cout("name:'$playername'");
 if(!isset($_POST['action'])){
 	if($playername!=''){//try to put the player where they belong
 		cout("player is lost, putting them where they belong");
@@ -36,7 +36,7 @@ if(!isset($_POST['action'])){
 				if(count($conn->query($query)->fetch_all(MYSQLI_ASSOC))==0){
 					//lobby has been deleted while you were away
 					$query="UPDATE player SET activity='' WHERE name='$name'";
-					$conn->query($query)or die($conn->error);
+					$conn->query($query)or cout($conn->error);
 					$page='browser';
 				}else{			
 					$page='lobby';
@@ -66,7 +66,7 @@ if(!isset($_POST['action'])){
 			if(count($result)==0){//name not taken, register and reload with name in url
 				$stmt=$conn->prepare("INSERT INTO player (name) VALUES (?)");
 				$stmt->bind_param("s",$name);
-				$stmt->execute() or die($conn->error);
+				$stmt->execute() or cout($conn->error);
 				header("Location: index.php?playername=$name");
 				return;
 			}else{
@@ -104,30 +104,30 @@ if(!isset($_POST['action'])){
 				
 				//register lobby
 				$query="INSERT INTO `lobby` (name,param,turn) VALUES ('$proposed_name','$params',0)";
-				$conn->query($query) or die($conn->error);
+				$conn->query($query) or cout($conn->error);
 				
 				
 				
 				
 				//get unique id
 				$query="SELECT id FROM `lobby` WHERE name='$proposed_name'";
-				$result=$conn->query($query) or die($conn->error);
+				$result=$conn->query($query) or cout($conn->error);
 				$id=$result->fetch_array()['id'];
 				
 				$table_name='lobby_'.$id;
 				
 				//create lobby table
-				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,moveset TEXT,turn INT)";
-				$conn->query($query) or die($conn->error);
+				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,moveset TEXT,turn INT,actualturn INT)";
+				$conn->query($query) or cout($conn->error);
 
 				
 				//remember that player is currently hosting (that way if they refresh nothing breaks)
 				$query="UPDATE player SET activity='wait $id' WHERE name='$playername'";
-				$conn->query($query) or die($conn->error);
+				$conn->query($query) or cout($conn->error);
 				
 				//insert player into lobby
-				$query="INSERT INTO $table_name (playername,ready,changed,turn)VALUES('$playername',FALSE,TRUE,0)";
-				$conn->query($query) or die($conn->error);
+				$query="INSERT INTO $table_name (playername,ready,changed,turn,actualturn)VALUES('$playername',FALSE,TRUE,0,0)";
+				$conn->query($query) or cout($conn->error);
 		
 				$page='lobby';
 				
@@ -163,26 +163,26 @@ if(!isset($_POST['action'])){
 		
 			
 			//insert player into lobby
-			$query="INSERT INTO $table_name (playername,ready,changed,turn) VALUES ('$playername',FALSE,TRUE,0)";
-			$conn->query($query) or die($conn->error);
+			$query="INSERT INTO $table_name (playername,ready,changed,turn,actualturn) VALUES ('$playername',FALSE,TRUE,0,0)";
+			$conn->query($query) or cout($conn->error);
 			
 			//set changed bit
 			$query="UPDATE $table_name SET changed=TRUE";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
 		break;
 		case 'leavelobby':
 			//remove activity
 			$query="UPDATE player SET activity='' WHERE name='$playername'";
 			cout($query);
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			
 			//remove from lobby
 			$query="DELETE FROM $table_name WHERE playername='$playername'";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
 			//notify others
 			setNotifyBits($table_name);
@@ -197,8 +197,8 @@ if(!isset($_POST['action'])){
 				$query1="DROP TABLE $table_name";
 				$query2="DELETE FROM lobby WHERE id=$id";
 				
-				$conn->query($query1) or die($conn->error);
-				$conn->query($query2) or die($conn->error);
+				$conn->query($query1) or cout($conn->error);
+				$conn->query($query2) or cout($conn->error);
 			}
 			return;
 		break;	
@@ -206,7 +206,7 @@ if(!isset($_POST['action'])){
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="UPDATE $table_name SET ready=TRUE WHERE playername='$playername'";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
 			$query="SELECT * FROM $table_name WHERE ready=FALSE";
 			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
@@ -214,7 +214,7 @@ if(!isset($_POST['action'])){
 				//everyone is ready so start turn timer
 				$timestamp=date_timestamp_get(date_create());
 				$query="UPDATE lobby SET turntimerstart=$timestamp WHERE id=$id";
-				$conn->query($query) or die($conn->error);
+				$conn->query($query) or cout($conn->error);
 			}
 
 			//notify others
@@ -226,7 +226,7 @@ if(!isset($_POST['action'])){
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="UPDATE lobby SET param='".$conn->real_escape_string($_POST['params'])."' WHERE id=$id";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			setNotifyBits($table_name);
 			return;
 		break;
@@ -241,7 +241,7 @@ if(!isset($_POST['action'])){
 			
 			//mark that updates were recieved
 			$query="UPDATE $table_name SET changed=FALSE WHERE playername='$playername'";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 
 			if(isset($_POST['force']))$changed=1;//force update
 			if($changed==0){
@@ -249,10 +249,10 @@ if(!isset($_POST['action'])){
 				return;
 			}else{
 				$query="SELECT * FROM lobby WHERE id=$id";
-				$result1=$conn->query($query)->fetch_array(MYSQLI_ASSOC)or die($conn->error);
+				$result1=$conn->query($query)->fetch_array(MYSQLI_ASSOC)or cout($conn->error);
 
 				$query="SELECT * FROM $table_name";
-				$result2=$conn->query($query)->fetch_all(MYSQLI_ASSOC)or die($conn->error);
+				$result2=$conn->query($query)->fetch_all(MYSQLI_ASSOC)or cout($conn->error);
 				
 				$ret=json_encode(['lobby'=>$result1,'players'=>$result2]);
 				echo $ret;
@@ -265,10 +265,10 @@ if(!isset($_POST['action'])){
 			$table_name='lobby_'.$id;
 			
 			$query="UPDATE player SET activity='game $id' WHERE name='$playername'";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
 			$query="UPDATE lobby SET ingame=TRUE where id=$id";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 
 			
 			return;
@@ -277,10 +277,10 @@ if(!isset($_POST['action'])){
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="SELECT * FROM lobby WHERE id=$id";
-			$result1=$conn->query($query) or die($conn->error);
+			$result1=$conn->query($query) or cout($conn->error);
 			$result1=$result1->fetch_array(MYSQLI_ASSOC);
 			$query="SELECT * FROM $table_name";
-			$result2=$conn->query($query) or die($conn->error);
+			$result2=$conn->query($query) or cout($conn->error);
 			$result2=$result2->fetch_all(MYSQLI_ASSOC);
 			$data=['lobby'=>$result1,'players'=>$result2];
 			echo json_encode($data);;
@@ -290,51 +290,71 @@ if(!isset($_POST['action'])){
 			$moveset=$_POST['moveset'];
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
-			$query="UPDATE $table_name SET moveset='".
+			$turn=$_POST['turn'];
+			$prevturn=$turn-1;
+			cout("want to submit moves for turn ".$turn);
+			$query="SELECT actualturn FROM $table_name WHERE actualturn!=$prevturn";
+			$laggers=count($conn->query($query)->fetch_all(MYSQLI_ASSOC));
+			
+			$good=true;
+			if($laggers>0){
+				cout("some players need the old turn data");
+				$good=false;
+			}
+			
+			if($good){
+				$query="UPDATE $table_name SET moveset='".
 				$conn->real_escape_string($moveset)."' ,
-				turn=turn+1 
+				turn=$turn
 				WHERE playername='$playername'";
-			
-			$conn->query($query) or die($conn->error);
-			
-			
-			//TODO if all players notified, restart timer
-			
+				echo "good";
+				
+				cout("good");
+				$conn->query($query) or cout($conn->error);
+				return;
+			}else{
+				cout("told to wait");
+				echo 'wait';
+				return;
+			}
 		break;
 		case 'pollendturn':
 			
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$sendmoves=false;
+			$turn=$_POST['turn'];
 			
 			//check what the next turn number is
-			$query="SELECT * FROM lobby WHERE id='$id'";
+			//$query="SELECT turn FROM $table_name WHERE playername='$playername'";
+			
 			//cout($query);
-			if(!($result=$conn->query($query))){
+			/*if(!($result=$conn->query($query))){
 				echo "error";
 				return;
-			}
-		
-			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
-			$wantedturn=$result['turn']+1;
-				cout("asking for turn ".$wantedturn);
+			}*/
+			cout("trying to advance to turn ".$turn);
+			//$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
+			//$wantedturn=$result['turn'];
+			//cout("asking for turn ".$wantedturn);
 			//cout($wantedturn);
 			//check that everyone has the same turn number
-			$query="SELECT * FROM $table_name WHERE turn!=$wantedturn";
-			//cout($query);	
+			$query="SELECT * FROM $table_name WHERE turn!=$turn";
+			//cout($query);
 			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
 			if(sizeof($result)==0){
 				//everyone is on the same page
 				$sendmoves=true;
 			}
-			cout("sendmoves: ".$sendmoves);
+			//cout("sendmoves: ".$sendmoves);
 			//todo send timestamp
 			if(!$sendmoves){
+				cout("told to wait");
 				echo "wait";
 				return;
 			}else{
 				$query="SELECT * FROM $table_name";
-				//cout($query);	
+				//cout($query);
 				$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
 				
 				$ret=['players'=>$result,'lobby'=>[]];
@@ -356,31 +376,37 @@ if(!isset($_POST['action'])){
 				// don't update lobby turn number, do restart lobby timer
 				//echo the move data
 			//
-				
+			return;
 		break;
 		case 'uploadmap':
 			$mapdata=$_POST['mapdata'];
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
+			$turn=$_POST['turn'];
 			
+			/*
 			$query="SELECT turn FROM $table_name WHERE playername='$playername'";
 			$turn=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0]['turn'];
-			
+			*/
 			
 			$query="UPDATE lobby SET turn=$turn, map='".$conn->real_escape_string($mapdata)."' WHERE id=$id";
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
+			
+			$query="UPDATE $table_name SET actualturn=$turn WHERE playername='$playername'";
+			$conn->query($query) or cout($conn->error);
+			cout("uploaded");
 		break;
 		case 'notifyquit':
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="DELETE FROM $table_name WHERE playername='$playername'";
 			cout($query);
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 
 			$query="UPDATE player SET activity='' WHERE name='$playername'";
 			cout($query);
-			$conn->query($query) or die($conn->error);
+			$conn->query($query) or cout($conn->error);
 			
 			$query="SELECT * FROM $table_name";
 			cout($query);
@@ -448,4 +474,3 @@ if($page!="none"){
 
 
 ?>
-

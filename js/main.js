@@ -17,35 +17,96 @@ function handleGameData(info){
 			orders:{
 				movement:[],
 				build:[],
-				raze:[]
-			},
-			
-			};
+				raze:[]},
+		};
 	});
 	var deg=game.players[game.player].colour;
 	id("buttonrow").style.filter="hue-rotate("+deg+"deg)";
+	id("inforow").style.filter="hue-rotate("+deg+"deg)";
 	
-	
+	//for util.js
 	tileDim=info.lobby.param.dim;
+	
 	//set timer to remaining time
 	if(info.lobby.turn==0){
+		console.log("turn zero, generating map from seed");
 		if(info.lobby.param.maptype==="random"){
 			//generate map from seed
 			generateMap(info.lobby.param);
-			drawMap();
+			
 		}else if(info.lobby.param.maptype==="load"){
+			console.log("loading doesn't work");
 			//get map from info.lobby.map
 			//TODO
 		}
 	}else{
+		console.log("loading another players map")
 		game.map=JSON.parse(info.lobby.map);
-		drawMap();
 	}
+	
+	
+	game.turn=parseInt(info.lobby.turn);
+	var me=null;
+	info.players.some((e)=>{
+		if(e.playername==game.player){
+			me=e;
+			print(e);
+			return true;}});
+
+	if(me.turn==game.turn+1){
+		console.log("moves already submitted, please wait");
+		setPollState();
+	}else if(me.turn==game.turn){
+		console.log("waiting for player input, end turn when done");
+		endPollState();
+	}else{
+		console.log("player turn is wrong");
+	}	
+	drawMap();
+}
+
+function endPollState(){
+	id("endturnbutton").disabled=false;
+	game.input.disabled=false;
+	id("inforow").children[0].textContent="turn: "+game.turn+" proceed";
 	
 }
 
+function setPollState(){
+	id("endturnbutton").disabled=true;
+	//TODO disable all buttons
+	game.input.disabled=true;
+	id("inforow").children[0].textContent="turn: "+game.turn+" wait";
+	var waiting=true;
+	function pollEndTurn(){
+		function handler(xhr){
+			if(xhr.readyState==4){
+				if(!waiting){
+					console.log("recieving network garbage");
+					return;
+				}
+				if(xhr.response=="wait"){
+					console.log("waiting for moves");
+				}else if(xhr.response=="error"){
+					win();
+				}else if(xhr.response!=""){
+					console.log("recieved moves");
+					clearInterval(handle);
+					var info=JSON.parse(xhr.response);;
+					waiting=false;
+					processNewMoves(info);
+					
+				}
+			}
+		}
+		console.log("creating poll request");
+		sendRequest("action=pollendturn&turn="+(game.turn+1),handler);
+	}
+	pollEndTurn();
+	var handle=setInterval(pollEndTurn,1000);
+}
 
-//end request to indiscriminately get all the database info about this game
+//send request to indiscriminately get all the database info about this game
 //note that this only gets called once (or whenever someone reconnects), and not every turn
 function loadGameData(){
 	var xhr=new XMLHttpRequest();
@@ -63,42 +124,33 @@ function loadGameData(){
 	xhr.send("action=loadgamedata&lobby_id="+game.lobby+"&playername="+game.player);
 }
 
-var turns=0;
-var wantedturn=0;
 function endTurn(){
-	wantedturn++;
-	id("endturnbutton").disabled=true;
-	//disable button temporarily
+	console.log("trying to send your moves");
+	id("endturnbutton").disabled=true;//need to do this as soon as possible
 	var moveset=encodeURI(JSON.stringify(game.players[game.player].orders));
-	sendRequest("action=notifyendturn&moveset="+moveset);
-	function pollEndTurn(){
-		var xhr=new XMLHttpRequest();
-		xhr.onreadystatechange=function(){
-
+	var alreadyGotIt=false;
+	function trySendMoves(){
+		function handler(xhr){
 			if(xhr.readyState==4){
+				if(alreadyGotIt)return;
 				if(xhr.response=="wait"){
-					
-				}else if(xhr.response=="error"){
-					win();
-				}else if(xhr.response!=""){
-					
+					console.log("server not ready for moves");
+				}else if(xhr.response=="good"){
+					console.log("server responded ok");
+					alreadyGotIt=true;
 					clearInterval(handle);
-					var info=JSON.parse(xhr.response);;
-					if(wantedturn>turns){
-						turns++;
-						processNewMoves(info);
-					}
+					setPollState();
+				}else{
+					console.log(xhr.response);
 				}
 			}
 		}
-		xhr.open("POST","index.php");
-		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhr.send("action=pollendturn&lobby_id="+
-		game.lobby+"&playername="+game.player);
+		console.log("creating request to submit moves");
+		sendRequest("action=notifyendturn&moveset="+moveset+"&turn="+(game.turn+1),handler);
 	}
-	pollEndTurn();
-	
-	var handle=setInterval(pollEndTurn,500);
+	//offer to end turn, server may say no
+	trySendMoves();
+	var handle=setInterval(trySendMoves,1000);
 	
 }
 
@@ -266,7 +318,7 @@ function processNewMoves(info){
 				//var actual=
 				
 				if(tile.owner!=maxKey){
-					if(tile.building=="city")tile.buildingData.size=0;
+					if(tile.building=="city")tile.buildingData.size/=2;
 				}
 				tile.owner=maxKey;
 				tile.force=rem;
@@ -387,11 +439,12 @@ function processNewMoves(info){
 		id("endturnbutton").disabled=true;
 	}
 	
-	
-	
-	//send map back
+	game.turn++;
+	endPollState();
+	//send map back, server now knows client is ok
 	var mapdata=encodeURI(JSON.stringify(game.map));
-	sendRequest("action=uploadmap&mapdata="+mapdata);
+	sendRequest("action=uploadmap&mapdata="+mapdata+"&turn="+game.turn);
+	
 }
 
 
@@ -401,9 +454,9 @@ function win(){
 }
 
 function init(){
-	
 	game={
 		lobby:null,
+		turn:null,
 		input:{selected:null},
 		map:{x:0,y:0,tiles:null},
 		terrain:{path:(name)=>{return "img/terrain/"+name+".png"},grass:"grass",dirt:"dirt"},
@@ -413,13 +466,10 @@ function init(){
 		numPlayers:0,
 		player:"",
 		buildingCosts:{"city":10,"wall":1,"camp":7}};
-
-	//first copy the variables needed to bootstrap the rest of the game data
+	//most essential variables
 	game.player=playername;
 	game.lobby=lobby_id;
 	loadGameData();
-
-	
 }
 
 
@@ -474,7 +524,7 @@ function generateMap(params){
 			if((build=pickWeighted(structP))!="none"){
 				tile.building=build;
 				if(build=="city"){
-					tile.buildingData={size:0};
+					tile.buildingData={size:pick(5,10)};
 				}
 				
 			}
@@ -663,6 +713,10 @@ function resign(){
 }
 
 function handleClick(tileRef){
+	if(game.input.disabled){
+		alert("please wait for other players");
+		return;
+	}
 	var dest=getTile(tileRef);
 	var destRef=tileRef;
 	if(game.input.selected==null){//select a source tile
@@ -801,7 +855,7 @@ function returnForce(tile,x){
 
 
 function orderBuild(type){
-	
+	if(game.input.disabled)return;
 	if(game.input.selected==null){
 		alert("you must select an owned tile first");
 		return;
@@ -869,7 +923,7 @@ function orderBuild(type){
 }
 
 function razeOrder(){
-	
+	if(game.input.disabled)return;
 	if(game.input.selected==null){
 		alert("you must select a tile with a controlled building and present units");
 		return;

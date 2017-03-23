@@ -33,11 +33,18 @@ $lobby_id=$page_data['lobby_id'];
 			<button onclick="orderBuild('wall')" class="blBtn"><b>WALL(2)</b></button>
 			<button onclick="orderBuild('camp')" class="blBtn"><b>CAMP(3)</b></button>
 		</div>
+	
+		
 		<div style="float:left">
 		
 			<button id="endturnbutton" style="float:left" onclick="endTurn()" class="endBtn"><em>END TURN</em></button>
 			<button id=" " style="float:left" onclick="resign()" class="endBtn"><em>QUIT</em></button>
 		</div>
+	</div>
+	
+	
+	<div id="inforow" style=";padding:5px;position:fixed;top:0px;right:0px;width:100px;height:30px;background-image:url('img/checker.png');border-radius:4px;border:2px solid orange">
+		<div class="blBtn">hi</div>
 	</div>
 </body>
 </html>

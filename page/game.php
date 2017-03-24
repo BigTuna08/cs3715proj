@@ -3,11 +3,10 @@
 $lobby_id=$page_data['lobby_id'];
 
 ?>
-<!doctype html>
+
 <html>
 <head>
-	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-	<link rel="stylesheet" type="text/css" href="css/style.css">
+	
 	<script type="text/javascript">
 		<?PHP
 		echo "var lobby_id='$lobby_id';";
@@ -17,10 +16,9 @@ $lobby_id=$page_data['lobby_id'];
 	<script type="text/javascript" src="js/util.js"></script>
 	<script type="text/javascript" src="js/gameObj.js"></script>
 	<script type="text/javascript" src="js/main.js"></script>
-</head>
-<body style="margin:0" onload="init()">
-	<div style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">
-		<img style="position:absolute" src="" width="1000" height="1000" usemap="#backmap">
+
+	<div onload="init()" style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">
+		<img style="position:absolute" src="img/seamless.png" width="1000" height="1000" usemap="#backmap">
 		<div style="pointer-events:None;position:absolute;width:1000px;height:1000px;background:grey">
 		<div id="main"></div>
 	</div>
@@ -46,5 +44,3 @@ $lobby_id=$page_data['lobby_id'];
 	<div id="inforow" style=";padding:5px;position:fixed;top:0px;right:0px;width:100px;height:30px;background-image:url('img/checker.png');border-radius:4px;border:2px solid orange">
 		<div class="blBtn">hi</div>
 	</div>
-</body>
-</html>

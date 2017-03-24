@@ -439,24 +439,16 @@ if(!isset($_POST['action'])){
 }
 
 if($page!="none"){
-	echo '<!doctype html><html><head><title>Hex Game</title></head><body>';
+	echo '<!doctype html><html><head><title>Hex Game</title>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		</head><body onload="init()">';
 	switch($page){
 		case 'login':
-			if(isset($page_data['notification']))echo $page_data['notification'];
-			?>
-			<form method="POST" action="index.php">
-				<input type="hidden" name="action" value="login">
-				<label>Login:<input name="name" type="text"></label>
-			</form>
-			<form method="POST" action="index.php">
-				<input type="hidden" name="action" value="signup">
-				<label>New Player:<input name="name" type="text"></label>
-			</form>
-			<?PHP
+			include('page/login.php');
 		break;
 		case 'browser':
 			include('page/browser.php');
-			
 		break;
 		case 'lobby':
 			include('page/lobby.php');

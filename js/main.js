@@ -338,8 +338,6 @@ function processNewMoves(info){
 	var campNums={};
 	
 	
-	
-	
 	//clear temporary data and count pop and mark camps, and reset force
 	game.map.tiles.forEach((row)=>{
 		row.forEach((e)=>{

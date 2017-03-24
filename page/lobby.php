@@ -22,7 +22,14 @@ function redisplay(info){
 	var waiting=false;//do we need to wait for the game to start
 	info.players.forEach((e)=>{
 		var li=document.createElement('li');
-		li.style.background=(e.ready==1)?"green":"";
+		if(e.ready==1){
+			li.style.padding="1px";
+			li.style.background="green";
+			li.style.borderRadius="2px";
+			li.style.border="2px solid yellow";
+		}
+		
+		
 		if(e.ready==0)waiting=true;
 		li.textContent="player "+e.playername;
 		ulist.appendChild(li);
@@ -86,17 +93,20 @@ function leave(){
 	setTimeout(()=>{window.location.replace("index.php?playername="+player)},1000);
 }
 </script>
-<title>LOBBY</title>
-</head>
-<body onload="init()">
-<h1 id="title"></h1>
+<div class="centerbox" style="width:800px">
+<span style="text-align:center">
+	<h1 style="border: 1px solid yellow;border-radius:2px" id="title"></h1>
+</span>
 <div id="param_fields">
-	<button>IMA HOST</button>
-	<label><input type="radio" name="maptype" value="random" onchange="updateParams()">Random</label>
-	<label><input type="radio" name="maptype" value="load" onchange="updateParams()">Load</label>
-	<input id="seed" type="number" value="123456" onchange="updateParams()">
-	<label>horizontal tiles: <input id="dimx" type="number" value="5" onchange="updateParams()"></label>
-	<label>vertical tiles: <input id="dimy" type="number" value="5" onchange="updateParams()"></label>
+	<div class="outline">
+		<span style="float:left">Game Parameters: &nbsp </span>
+		<div class="outline">Seed:&nbsp <input id="seed" type="number" style="width:7em;color:black;background:white" value="123456" onchange="updateParams()"></label></div>
+		<div class="outline">
+			Dimensions:&nbsp
+			<input id="dimx" type="number" value="5" onchange="updateParams()">X<input id="dimy" type="number" value="5" onchange="updateParams()">
+		</div>
+	</div>
+	<div style="clear:both"></div>
 </div>
 
 <ul id="players">
@@ -105,3 +115,4 @@ function leave(){
 
 <button onclick="sendRequest('action=ready')">READY</button>
 <button onclick="leave()">LEAVE</button>
+</div>

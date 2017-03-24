@@ -5,4 +5,4 @@ game background image has fixed dimensions but should be dynamic (it has to be t
 
 GRAPHICS:
 make movement arrows more visible
-
+make background grey dynamically sized

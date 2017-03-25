@@ -147,8 +147,10 @@ if(!isset($_POST['action'])){
 			$table_name='lobby_'.$_POST['lobby'];
 			$id=$_POST['lobby'];
 			$query="SELECT * FROM lobby WHERE id=$id";
-			if($conn->query($query)->fetch_all(MYSQLI_ASSOC)[0]['ingame']){
-				$page_data['notification']='game already started, you just missed them';
+			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+	
+			if(count($result)==0 || $result[0]['ingame']){
+				$page_data['notification']='that lobby is unavailable';
 				$page='browser';
 				break;
 			}

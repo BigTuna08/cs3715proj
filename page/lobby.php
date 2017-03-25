@@ -21,6 +21,7 @@ function redisplay(info){
 	var params=JSON.parse(info.lobby.param);
 	var waiting=false;//do we need to wait for the game to start
 	info.players.forEach((e)=>{
+		print(e);
 		var li=document.createElement('li');
 		if(e.ready==1){
 			li.style.padding="1px";
@@ -34,13 +35,15 @@ function redisplay(info){
 		li.textContent="player "+e.playername;
 		ulist.appendChild(li);
 	});
-	if(info.players.length==1)waiting=true;
-	
+	if(info.players.length==1){
+		console.log("only one player, will not enter game");
+		waiting=true;
+	}
 	id("title").textContent=info.lobby.name;
 	id("seed").value=params.seed;
 	id("dimx").value=params.dim[0];
 	id("dimy").value=params.dim[1];
-	document.querySelector('input[name="maptype"][value='+params.maptype+']').checked=true;
+	//document.querySelector('input[name="maptype"][value='+params.maptype+']').checked=true;
 
 	if(!waiting){
 		sendRequest("action=notifyentergame");
@@ -81,9 +84,9 @@ var sendRequest=new SendRequest(lobby_id,player);
 function updateParams(){
 	var seed=id("seed").value;
 	var dim=[id('dimx').value,id('dimy').value]
-	var maptype=document.querySelector('input[name="maptype"]:checked').value;
+	//var maptype=document.querySelector('input[name="maptype"]:checked').value;
 
-	var params={seed:seed,dim:dim,maptype:maptype};
+	var params={seed:seed,dim:dim};
 	console.log("params="+encodeURI(JSON.stringify(params)));
 	sendRequest("action=updateparams&params="+encodeURI(JSON.stringify(params)));
 	
@@ -113,6 +116,6 @@ function leave(){
 <li>Please wait</li>
 </ul>
 
-<button onclick="sendRequest('action=ready')">READY</button>
-<button onclick="leave()">LEAVE</button>
+<button class="sesamestreet" onclick="sendRequest('action=ready')">READY</button>
+<button class="sesamestreet" onclick="leave()">LEAVE</button>
 </div>

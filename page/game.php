@@ -17,9 +17,9 @@ $lobby_id=$page_data['lobby_id'];
 	<script type="text/javascript" src="js/gameObj.js"></script>
 	<script type="text/javascript" src="js/main.js"></script>
 
-	<div onload="init()" style="margin-left:20%;width:60%;height:100%;top:10%;position:absolute;">
-		<img style="position:absolute" src="img/seamless.png" width="1000" height="1000" usemap="#backmap">
-		<div style="pointer-events:None;position:absolute;width:1000px;height:1000px;background:grey">
+	<div id="parentdiv" onload="init()" style="margin:auto;">
+		<img id="behindimg" style="position:absolute" src="" width="1000" height="1000" usemap="#backmap">
+		<div id="fakeimg" style="pointer-events:None;position:absolute;width:1000px;height:1000px;background-image:url('img/seamless.png')">
 		<div id="main"></div>
 	</div>
 	

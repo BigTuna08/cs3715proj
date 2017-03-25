@@ -117,7 +117,7 @@ if(!isset($_POST['action'])){
 				$table_name='lobby_'.$id;
 				
 				//create lobby table
-				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,moveset TEXT,turn INT,actualturn INT)";
+				$query="CREATE TABLE $table_name (playername VARCHAR(50),ready BOOLEAN,changed BOOLEAN,moveset TEXT,turn INT,actualturn INT,state INT)";
 				$conn->query($query) or cout($conn->error);
 
 				
@@ -126,7 +126,7 @@ if(!isset($_POST['action'])){
 				$conn->query($query) or cout($conn->error);
 				
 				//insert player into lobby
-				$query="INSERT INTO $table_name (playername,ready,changed,turn,actualturn)VALUES('$playername',FALSE,TRUE,0,0)";
+				$query="INSERT INTO $table_name (playername,ready,changed,turn,actualturn,state)VALUES('$playername',FALSE,TRUE,0,0,0)";
 				$conn->query($query) or cout($conn->error);
 		
 				$page='lobby';
@@ -163,7 +163,7 @@ if(!isset($_POST['action'])){
 		
 			
 			//insert player into lobby
-			$query="INSERT INTO $table_name (playername,ready,changed,turn,actualturn) VALUES ('$playername',FALSE,TRUE,0,0)";
+			$query="INSERT INTO $table_name (playername,ready,changed,turn,actualturn,state) VALUES ('$playername',FALSE,TRUE,0,0,0)";
 			$conn->query($query) or cout($conn->error);
 			
 			//set changed bit
@@ -294,7 +294,13 @@ if(!isset($_POST['action'])){
 			$prevturn=$turn-1;
 			cout("want to submit moves for turn ".$turn);
 			$query="SELECT actualturn FROM $table_name WHERE actualturn!=$prevturn";
-			$laggers=count($conn->query($query)->fetch_all(MYSQLI_ASSOC));
+			$error=false;
+			$result=$conn->query($query) or $error=true;
+			if($error){
+				echo "error";
+				return;
+			}	
+			$laggers=count($result->fetch_all(MYSQLI_ASSOC));
 			
 			$good=true;
 			if($laggers>0){
@@ -325,22 +331,9 @@ if(!isset($_POST['action'])){
 			$sendmoves=false;
 			$turn=$_POST['turn'];
 			
-			//check what the next turn number is
-			//$query="SELECT turn FROM $table_name WHERE playername='$playername'";
-			
-			//cout($query);
-			/*if(!($result=$conn->query($query))){
-				echo "error";
-				return;
-			}*/
 			cout("trying to advance to turn ".$turn);
-			//$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0];
-			//$wantedturn=$result['turn'];
-			//cout("asking for turn ".$wantedturn);
-			//cout($wantedturn);
-			//check that everyone has the same turn number
-			$query="SELECT * FROM $table_name WHERE turn!=$turn";
-			//cout($query);
+			$query="SELECT * FROM $table_name WHERE turn!=$turn AND state=0";
+
 			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
 			if(sizeof($result)==0){
 				//everyone is on the same page
@@ -353,7 +346,7 @@ if(!isset($_POST['action'])){
 				echo "wait";
 				return;
 			}else{
-				$query="SELECT * FROM $table_name";
+				$query="SELECT * FROM $table_name WHERE turn=$turn";
 				//cout($query);
 				$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
 				
@@ -362,20 +355,6 @@ if(!isset($_POST['action'])){
 				echo json_encode($ret);
 			}
 				
-			//get current turn from lobby
-			//check time, is time expired
-			//if time not expired
-				//server checks all player turn numbers are equal to next turn
-				//if equal
-					//$newturn = true
-				//
-			//if timer expired
-				//force moves to zero and update turn numbers on all players
-				//newturn=true
-			//if newturn
-				// don't update lobby turn number, do restart lobby timer
-				//echo the move data
-			//
 			return;
 		break;
 		case 'uploadmap':
@@ -400,7 +379,7 @@ if(!isset($_POST['action'])){
 		case 'notifyquit':
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
-			$query="DELETE FROM $table_name WHERE playername='$playername'";
+			$query="UPDATE  $table_name SET state=1 WHERE playername='$playername'";
 			cout($query);
 			$conn->query($query) or cout($conn->error);
 
@@ -408,7 +387,7 @@ if(!isset($_POST['action'])){
 			cout($query);
 			$conn->query($query) or cout($conn->error);
 			
-			$query="SELECT * FROM $table_name";
+			$query="SELECT * FROM $table_name WHERE state=0";
 			cout($query);
 			$result=$conn->query($query);
 			

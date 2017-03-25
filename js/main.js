@@ -30,15 +30,9 @@ function handleGameData(info){
 	//set timer to remaining time
 	if(info.lobby.turn==0){
 		console.log("turn zero, generating map from seed");
-		if(info.lobby.param.maptype==="random"){
-			//generate map from seed
+	
 			generateMap(info.lobby.param);
 			
-		}else if(info.lobby.param.maptype==="load"){
-			console.log("loading doesn't work");
-			//get map from info.lobby.map
-			//TODO
-		}
 	}else{
 		console.log("loading another players map")
 		game.map=JSON.parse(info.lobby.map);
@@ -88,7 +82,11 @@ function setPollState(){
 				if(xhr.response=="wait"){
 					console.log("waiting for moves");
 				}else if(xhr.response=="error"){
-					win();
+					if(!game.over){
+						alert("the game is over, everyone has left");
+						game.over=true;
+					}
+					setTimeout(()=>{location.replace("index.php?playername="+game.player)},1000);
 				}else if(xhr.response!=""){
 					console.log("recieved moves");
 					clearInterval(handle);
@@ -140,7 +138,14 @@ function endTurn(){
 					alreadyGotIt=true;
 					clearInterval(handle);
 					setPollState();
+				}else if(xhr.response=="error"){
+					if(!game.over){
+						game.over=true;
+						alert("the game is over, returning to lobby");
+						setTimeout(()=>{location.replace("index.php?playername="+game.player)},500);
+					}
 				}else{
+					
 					console.log(xhr.response);
 				}
 			}
@@ -424,21 +429,26 @@ function processNewMoves(info){
 	drawMap();
 	game.input.selected=null;
 	
-	id("endturnbutton").disabled=false;
+	
 	if(quit){
-		sendRequest('action=notifyquit');
-		alert('you have no more forces, returning to the lobby');
-		setTimeout(()=>{window.location.replace('index.php?playername='+game.player)},1000);
+		if(!game.spectate){
+			sendRequest('action=notifyquit');
+			alert('you have no more forces, you can continue to spectate');
+			game.spectate=true;
+		}
 		id("endturnbutton").disabled=true;
 	}
 	
 	if(win){
-		win();
+		alert("Congratulations, there is nothing left to conquer. Have you considered taking up golf?");
 		id("endturnbutton").disabled=true;
 	}
 	
 	game.turn++;
-	endPollState();
+	if(!quit && !game.spectate)
+		endPollState();
+	else
+		setPollState();//just to update counter, actually doesn't affect game
 	//send map back, server now knows client is ok
 	var mapdata=encodeURI(JSON.stringify(game.map));
 	sendRequest("action=uploadmap&mapdata="+mapdata+"&turn="+game.turn);
@@ -446,10 +456,7 @@ function processNewMoves(info){
 }
 
 
-function win(){
-	alert('there is nothing left to do, you must retire now');
-	window.location.replace('index.php?playername='+game.player);
-}
+
 
 function init(){
 	game={
@@ -576,9 +583,16 @@ function generateMap(params){
 
 //create html from hex grid
 function drawMap(){
+
 	game.gfx.grid.innerHTML="";//clear whatever is left over
 	var tileHeight=game.gfx.tileDim[1];
 	var tileWidth=game.gfx.tileDim[0];
+	
+	[id("fakeimg"),id("behindimg"),id("parentdiv")].forEach((e)=>{
+		e.style.width=game.map.tiles[0].length*tileWidth+"px";
+		e.style.height=game.map.tiles.length+100+"px";
+	});
+	
 	var imageMap=document.createElement('map');
 	imageMap.name='backmap';
 	game.gfx.grid.appendChild(imageMap);
@@ -701,13 +715,16 @@ function drawMap(){
 
 function resign(){
 	var y=confirm("are you sure you want to quit?");
-	
+	var leave=confirm("would you like to return to the lobby now");
+	game.spectate=!leave;
 	if(y){
 		endTurn();
 		setTimeout(()=>{},500);
 		sendRequest('action=notifyquit');
 	}
-	setTimeout(()=>{location.replace("index.php?playername="+game.player)},3000);
+	if(leave){
+		setTimeout(()=>{location.replace("index.php?playername="+game.player)},3000);
+	}
 }
 
 function handleClick(tileRef){

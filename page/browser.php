@@ -3,7 +3,12 @@ $stmt=$conn->prepare("SELECT * FROM lobby");
 $stmt->execute();
 $result=$stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
-
+<style>
+td{
+	border:1px solid yellow;
+	width:50px;
+}
+</style>
 <div class="centerbox" style="width:400px">
 <h1>Lobby Browser</h1>
 
@@ -13,7 +18,7 @@ if(count($result)==0){
 	
 }else{
 	?>
-	<table style="width:100%">
+	<table style=";;margin:auto;border:1px solid yellow;">
 	<tr><td colspan=2>LOBBIES</td></tr>
 	<?PHP
 }
@@ -32,14 +37,19 @@ foreach($result as $lobby){
 	<?PHP
 }
 ?>
-</table>
+</table><br>
 <?PHP
 if(isset($page_data['notification']))echo $page_data['notification'];
 ?>
-
-<form method="POST" action="index.php?playername=<?PHP echo $playername?>">
+<script>
+function init(){;}//does nothing
+function validate(e){
+	return !document.getElementById("name").value=="";
+}
+</script>
+<form method="POST" onSubmit="return validate(event)" action="index.php?playername=<?PHP echo $playername?>">
 	<input type="hidden" name="action" value="newlobby">
-	<input type="text" name="name" placeholder="unique lobby name">
+	<input type="text" id="name" name="name" placeholder="unique lobby name">
 	<input type="submit" value="Create Lobby">
 </form>
 </div>

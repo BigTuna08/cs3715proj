@@ -324,8 +324,11 @@ function processNewMoves(info){
 				}
 				//var actual=
 				
-				if(tile.owner!=maxKey){
-					if(tile.building=="city")tile.buildingData.size/=2;
+				if(tile.owner!=maxKey && tile.owner!=null){
+					if(tile.building=="city"){
+						
+						tile.buildingData.size=Math.round(tile.buildingData.size/2);
+					}
 				}
 				tile.owner=maxKey;
 				tile.force=rem;
@@ -410,7 +413,7 @@ function processNewMoves(info){
 	info.players.forEach((e)=>{
 		print(e);
 		e.moveset.build.forEach((m)=>{
-			if(getTile(m.tile).owner!=e.playername){
+			if(getTile(m.tile).owner!=e.playername && getTile(m.tile).owner!=null){
 				//the tile was attacked while being constructed,
 				//the units involved were lost
 				console.log("building destroyed while under construction");

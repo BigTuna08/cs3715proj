@@ -9,7 +9,7 @@
 	<form method="POST" action="index.php?action=login">
 		<input type="hidden" name="action" value="login">
 		<label>Name:<br><input name="name" type="text"></label>
-		<label>Password:<br><input name="pass" type="text"></label>
+		<label>Password:<br><input name="pass" type="password"></label>
 		<input style="margin-top:1em" type="submit" value="Login">
 	</form>
 	<br>

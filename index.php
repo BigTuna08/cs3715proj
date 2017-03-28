@@ -1,6 +1,12 @@
 <?PHP
 include('php/dbconnect.php');
 $conn=getConnect();
+session_start();
+$playername='';
+if(isset($_SESSION['playername'])){
+	cout("recognised layer");
+	$playername=$_SESSION['playername'];
+}
 
 function setNotifyBits($lobby){
 	global $conn;
@@ -15,13 +21,16 @@ function cout($s){
 	file_put_contents($file, $current);
 }
 
+
+$action='';
+if(isset($_POST['action']))$action=$_POST['action'];
+if(isset($_GET['action']))$action=$_GET['action'];
 $page="none";
 $page_data=[];
-$playername='';
-if(isset($_GET['playername']))$playername=$_GET['playername'];
-if(isset($_POST['playername']))$playername=$_POST['playername'];
+//if(isset($_GET['playername']))$playername=$_GET['playername'];
+//if(isset($_POST['playername']))$playername=$_POST['playername'];
 cout("name:'$playername'");
-if(!isset($_POST['action'])){
+if($action===''){
 	if($playername!=''){//try to put the player where they belong
 		cout("player is lost, putting them where they belong");
 		$stmt=$conn->prepare("SELECT activity FROM player WHERE name=?");
@@ -55,27 +64,42 @@ if(!isset($_POST['action'])){
 		$page='login';
 	}
 }else{
-	cout("action: ".$_POST['action']);
-	switch($_POST['action']){
+	cout("action: ".$action);
+	switch($action){
+		case 'logout':
+			session_destroy();
+			$page='login';
+		break;
+		case 'newuser':
+			$page='newuser';
+		break;
+		case 'existinguser':
+			$page='login';
+		break;
 		case 'signup':
 			$name=$_POST['name'];
+			$pass=$_POST['pass'];
 			$stmt=$conn->prepare("SELECT id FROM player WHERE name=?");
 			$stmt->bind_param("s",$name);
 			$stmt->execute();
 			$result=$stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 			if(count($result)==0){//name not taken, register and reload with name in url
-				$stmt=$conn->prepare("INSERT INTO player (name) VALUES (?)");
-				$stmt->bind_param("s",$name);
+				$hashpass=md5($pass."salty salt salt");
+				$stmt=$conn->prepare("INSERT INTO player (name,pass) VALUES (?,?)");
+				$stmt->bind_param("ss",$name,$hashpass);
 				$stmt->execute() or cout($conn->error);
-				header("Location: index.php?playername=$name");
-				return;
+				$_SESSION['playername']=$name;
+				$page='browser';
+				//header("Location: index.php");//now that user is logg
+				
 			}else{
-				$page='login';
+				$page='newuser';
 				$page_data['notification']='that name is taken';
 			}
 		break;
 		case 'login':
 			$name=$_POST['name'];
+			$pass=$_POST['pass'];
 			$stmt=$conn->prepare("SELECT * FROM player WHERE name=?");
 			$stmt->bind_param("s",$name);
 			$stmt->execute();
@@ -85,13 +109,19 @@ if(!isset($_POST['action'])){
 				$page='login';
 				$page_data['notification']='no player by that name';
 			}else{
-				cout("logging in");
-				header("Location: index.php?playername=$name");
-				return;
+				$hash=md5($pass."salty salt salt");
+				if($hash==$result[0]['pass']){
+					cout("logging in");
+					$_SESSION['playername']=$name;
+					header("Location: index.php");
+					return;
+				}else{
+					$page='login';
+					$page_data['notification']='bad password';
+				}
 			}
 		break;
 		case 'newlobby':
-			
 			$proposed_name=$conn->real_escape_string($_POST['name']);
 			//check if lobby exists
 			$query="SELECT * FROM lobby WHERE name='".$proposed_name."'";
@@ -335,8 +365,16 @@ if(!isset($_POST['action'])){
 			
 			cout("trying to advance to turn ".$turn);
 			$query="SELECT * FROM $table_name WHERE turn!=$turn AND state=0";
-
-			$result=$conn->query($query)->fetch_all(MYSQLI_ASSOC);
+			
+			
+			
+			$result=$conn->query($query);
+			if(!$result){
+				cout("the game is gone");
+				echo "error";
+				return;
+			}
+			$result=$result->fetch_all(MYSQLI_ASSOC);
 			if(sizeof($result)==0){
 				//everyone is on the same page
 				$sendmoves=true;
@@ -425,6 +463,9 @@ if($page!="none"){
 		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 		</head><body onload="init()">';
 	switch($page){
+		case 'newuser':
+			include('page/newuser.php');
+		break;
 		case 'login':
 			include('page/login.php');
 		break;
@@ -440,6 +481,7 @@ if($page!="none"){
 		case 'default':
 			?>How did you get here?<?PHP
 		break;
+		
 	}
 	echo '</body></html>';
 }

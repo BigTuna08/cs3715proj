@@ -10,8 +10,8 @@ $lobby_id=$activity[1];
 <script>
 "use strict"
 //globals
-var lobby_id='<?PHP echo $lobby_id?>';
-var player='<?PHP echo $_GET['playername']?>';
+var lobby_id='<?PHP echo $lobby_id;?>';
+var player='<?PHP echo $playername;?>';
 
 
 function redisplay(info){
@@ -67,7 +67,7 @@ function getInfo(force){
 	}
 	xhr.open("POST","index.php");
 	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xhr.send("action=querylobby&lobby_id="+lobby_id+"&playername="+player+(force?"&force=true":""));
+	xhr.send("action=querylobby&lobby_id="+lobby_id+(force?"&force=true":""));
 	
 	//if allready
 	//	//	redirect page to game.php with js window.location.replace ?lob=$lobbyname

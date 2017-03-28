@@ -33,6 +33,7 @@ foreach($result as $lobby){
 		<td><div><?PHP echo $lobby['name'] ?></div></td>
 		<td><input type="submit" value="JOIN"></td>
 	</form>
+	
 	</tr>
 	<?PHP
 }
@@ -51,6 +52,10 @@ function validate(e){
 	<input type="hidden" name="action" value="newlobby">
 	<input type="text" id="name" name="name" placeholder="unique lobby name">
 	<input type="submit" value="Create Lobby">
+</form>
+<form style="float:right" method="post" action="index.php">
+	<input type="submit" value="logout">
+	<input type="hidden" name="action" value="logout">
 </form>
 </div>
 <?PHP

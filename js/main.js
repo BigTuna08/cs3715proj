@@ -89,6 +89,7 @@ function setPollState(){
 					setTimeout(()=>{location.replace("index.php?playername="+game.player)},1000);
 				}else if(xhr.response!=""){
 					console.log("recieved moves");
+					console.log(xhr.response);
 					clearInterval(handle);
 					var info=JSON.parse(xhr.response);;
 					waiting=false;
@@ -185,6 +186,7 @@ function processNewMoves(info){
 		e.moveset.build.forEach((m)=>{
 			var cost=game.buildingCosts[m.type];
 			getTile(m.tile).uncommitedForce-=cost;
+			print(getTile(m.tile));
 		})
 	})
 	
@@ -406,16 +408,19 @@ function processNewMoves(info){
 	
 	//build buildings
 	info.players.forEach((e)=>{
+		print(e);
 		e.moveset.build.forEach((m)=>{
 			if(getTile(m.tile).owner!=e.playername){
 				//the tile was attacked while being constructed,
 				//the units involved were lost
+				console.log("building destroyed while under construction");
 			}else{
-			
-				game.map.tiles[m.tile[1]][m.tile[0]].building=m.type;
+								console.log("placing building");
+
+				getTile(m.tile).building=m.type;
 				if(m.type=="city"){
-					game.map.tiles[m.tile[1]][m.tile[0]].buildingData={size:1};
-					//getTile(m.tile).buildingData={size:1};
+					getTile(m.tile).buildingData={size:5};
+					
 				}
 			}})});
 	
@@ -470,8 +475,13 @@ function init(){
 		players:{},
 		numPlayers:0,
 		player:"",
-		buildingCosts:{"city":10,"wall":1,"camp":7}};
+		buildingCosts:{"city":4,"wall":2,"camp":3}};
 	//most essential variables
+	
+	["city","wall","camp"].forEach((e)=>{
+		console.log("buildbtn"+e);
+		id("buildbtn"+e).children[0].textContent=e.toUpperCase()+"("+game.buildingCosts[e]+")";
+	});
 	game.player=playername;
 	game.lobby=lobby_id;
 	loadGameData();
@@ -501,7 +511,7 @@ function generateMap(params){
 	
 	
 	
-	var forcePerPlayer=params.dim[0]*params.dim[1];
+	var forcePerPlayer=params.dim[0]*params.dim[1]*2;
 	
 	var counts=Object.keys(game.players).map((e)=>{
 		return {name:e,toplace:forcePerPlayer}
@@ -509,7 +519,7 @@ function generateMap(params){
 	
 	
 	//placement probabilites
-	var structP=[{P:7,val:"city"},{P:16,val:"wall"},{P:5,val:"camp"},{p:72,val:"none"}];
+	var structP=[{P:13,val:"city"},{P:20,val:"wall"},{P:7,val:"camp"},{p:100-13-20-7,val:"none"}];
 	
 	game.map.x=parseInt(params.dim[0]);
 	game.map.y=parseInt(params.dim[1]);
@@ -589,8 +599,8 @@ function drawMap(){
 	var tileWidth=game.gfx.tileDim[0];
 	
 	[id("fakeimg"),id("behindimg"),id("parentdiv")].forEach((e)=>{
-		e.style.width=game.map.tiles[0].length*tileWidth+"px";
-		e.style.height=game.map.tiles.length+100+"px";
+		e.style.width=(1+game.map.tiles[0].length)*tileWidth+"px";//+1 to account for offset row
+		e.style.height=game.map.tiles.length*tileHeight+"px";
 	});
 	
 	var imageMap=document.createElement('map');
@@ -715,15 +725,11 @@ function drawMap(){
 
 function resign(){
 	var y=confirm("are you sure you want to quit?");
+	if(y)setTimeout(()=>{sendRequest('action=notifyquit');},200);
 	var leave=confirm("would you like to return to the lobby now");
 	game.spectate=!leave;
-	if(y){
-		endTurn();
-		setTimeout(()=>{},500);
-		sendRequest('action=notifyquit');
-	}
 	if(leave){
-		setTimeout(()=>{location.replace("index.php?playername="+game.player)},3000);
+		setTimeout(()=>{location.replace("index.php?playername="+game.player)},400);
 	}
 }
 
@@ -875,7 +881,9 @@ function orderBuild(type){
 		alert("you must select an owned tile first");
 		return;
 	}
+	
 	var tile=getTile(game.input.selected);
+	print(tile);
 	if (game.players[game.player].orders.build.some((e)=>{
 		
 		if(e.tile.isEqual(game.input.selected)){
@@ -883,46 +891,36 @@ function orderBuild(type){
 			return true;
 		}
 	})) return true;
+	
 	if(tile.building!=null){
 		alert("there is already a building here, it must be demolished first");
 		return;
 	}
-	var forcecost=0;
+	var forcecost=game.buildingCosts[type];
+	if(tile.uncommitedForce<forcecost){
+		alert("you need at least "+forcecost+" units to build a "+type);
+		return;
+	}
+	console.log("continueing with build order");
+	//special build conditions
 	switch(type){
 		case 'city':
-			forcecost=10;
-			if (tile.uncommitedForce<10){
-				alert("you need at least 10 units to build a city");
-				return;
-			}
 			var tocheck=get_adjacency(game.input.selected,true);
-			
 			var valid=true;
 			for(var i=0;i<tocheck.length;i++){
-				var tile=getTile(tocheck[i]);
-				
-				if(tile.owner!=game.player && tile.owner!=null || tile.building=="city"){
-					
+				var tile1=getTile(tocheck[i]);
+				if(tile1.owner!=game.player && tile1.owner!=null || tile1.building=="city"){
 					var valid=false;
 				}
 			}
 			if(!valid){
 				alert("surrounding tiles must be free of enemies and cities");
 				return;
-			}			
+			}
 		break;
 		case 'wall':
-			forcecost=5;
-			if(tile.uncommitedForce<5){
-				alert("you need at least 5 units to build a wall");
-				return;
-			}
 		break;
 		case 'camp':
-			forcecost=7;
-			if(tile.uncommitedForce<7){
-				alert("you need at least 7 units to build a camp");
-			}
 		break;
 	}
 	game.players[game.player].orders.build.push({type:type,tile:game.input.selected});

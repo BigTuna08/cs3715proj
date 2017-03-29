@@ -57,6 +57,10 @@ button{
 	margin-left:10px;background:grey;border-radius:4px;border:2px solid yellow;
 	color:black;
 }
+.endBtn:disabled{
+	margin-left:10px;background:#111111;border-radius:4px;border:2px solid grey;
+	color:#333333;
+}
 button:hover{
 	background:white;
 }

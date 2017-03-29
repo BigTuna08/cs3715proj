@@ -482,7 +482,6 @@ function init(){
 	//most essential variables
 	
 	["city","wall","camp"].forEach((e)=>{
-		console.log("buildbtn"+e);
 		id("buildbtn"+e).children[0].textContent=e.toUpperCase()+"("+game.buildingCosts[e]+")";
 	});
 	game.player=playername;

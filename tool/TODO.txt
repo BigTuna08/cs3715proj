@@ -1,8 +1,0 @@
-timer for auto move submit
-saving //do we even want this?
-lobby, browser, and sign on pages could use some style
-game background image has fixed dimensions but should be dynamic (it has to be there to make the imagemap work)
-
-GRAPHICS:
-make movement arrows more visible
-make background grey dynamically sized

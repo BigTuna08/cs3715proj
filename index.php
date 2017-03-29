@@ -15,10 +15,9 @@ function setNotifyBits($lobby){
 }
 
 function cout($s){
-	$file = 'stdout.txt';
-	$current = file_get_contents($file);
-	$current .= "$s\r\n";
-	file_put_contents($file, $current);
+	$file = fopen('stdout.txt','a');
+	fwrite($file,$s."\r\n");
+	fclose($file);
 }
 
 
@@ -461,7 +460,7 @@ if($page!="none"){
 	echo '<!doctype html><html><head><title>Hex Game</title>
 		<link rel="stylesheet" type="text/css" href="css/style.css">
 		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-		</head><body onload="init()">';
+		</head><body onload="window.init && init()">';
 	switch($page){
 		case 'newuser':
 			include('page/newuser.php');

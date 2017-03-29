@@ -1,5 +1,6 @@
 <?php
 function getConnect(){
+	//server chosen between local test server and assigned group server
 	$servername = '';
 		$username = '';
 		$password = '';

@@ -2,34 +2,36 @@
 include('php/dbconnect.php');
 $conn=getConnect();
 session_start();
+
+//first try to identify client
 $playername='';
 if(isset($_SESSION['playername'])){
 	cout("recognised layer");
 	$playername=$_SESSION['playername'];
 }
 
+//this function marks changes as needing to be sent to clients
 function setNotifyBits($lobby){
 	global $conn;
 	$query="UPDATE $lobby SET changed=TRUE";
 	$conn->query($query) or cout($conn->error);
 }
 
+//logging is done to stdout.txt because this file gets called by ajax a lot
 function cout($s){
 	$file = fopen('stdout.txt','a');
 	fwrite($file,$s."\r\n");
 	fclose($file);
 }
 
-
+//determine what the request is for
 $action='';
 if(isset($_POST['action']))$action=$_POST['action'];
 if(isset($_GET['action']))$action=$_GET['action'];
 $page="none";
 $page_data=[];
-//if(isset($_GET['playername']))$playername=$_GET['playername'];
-//if(isset($_POST['playername']))$playername=$_POST['playername'];
 cout("name:'$playername'");
-if($action===''){
+if($action===''){//we don't know what the client wants us to do
 	if($playername!=''){//try to put the player where they belong
 		cout("player is lost, putting them where they belong");
 		$stmt=$conn->prepare("SELECT activity FROM player WHERE name=?");
@@ -58,24 +60,25 @@ if($action===''){
 				$page='browser';
 			break;
 		}
-	}else{
+	}else{//the client is a new user or needs to log in
 		cout("new player");
 		$page='login';
 	}
 }else{
 	cout("action: ".$action);
+	//the following giant switch statement looks stupid but makes sense because php has no consistent state
 	switch($action){
-		case 'logout':
+		case 'logout'://wants to log out
 			session_destroy();
 			$page='login';
 		break;
-		case 'newuser':
+		case 'newuser'://wants to go to page
 			$page='newuser';
 		break;
-		case 'existinguser':
+		case 'existinguser'://wants to go to page
 			$page='login';
 		break;
-		case 'signup':
+		case 'signup'://wants to register
 			$name=$_POST['name'];
 			$pass=$_POST['pass'];
 			$stmt=$conn->prepare("SELECT id FROM player WHERE name=?");
@@ -89,14 +92,13 @@ if($action===''){
 				$stmt->execute() or cout($conn->error);
 				$_SESSION['playername']=$name;
 				$page='browser';
-				//header("Location: index.php");//now that user is logg
 				
 			}else{
 				$page='newuser';
 				$page_data['notification']='that name is taken';
 			}
 		break;
-		case 'login':
+		case 'login'://wants to log in
 			$name=$_POST['name'];
 			$pass=$_POST['pass'];
 			$stmt=$conn->prepare("SELECT * FROM player WHERE name=?");
@@ -120,7 +122,7 @@ if($action===''){
 				}
 			}
 		break;
-		case 'newlobby':
+		case 'newlobby'://wants to start a lobby
 			$proposed_name=$conn->real_escape_string($_POST['name']);
 			//check if lobby exists
 			$query="SELECT * FROM lobby WHERE name='".$proposed_name."'";
@@ -164,13 +166,10 @@ if($action===''){
 				//lobby exists
 				$page='browser';
 				$page_data['notification']='that lobby already exists, perhaps you want to join it instead?';
-				
-				
-				
-				
+
 			}
 		break;
-		case 'join':
+		case 'join'://wants to join a lobby
 		
 			$page='lobby';
 			$table_name='lobby_'.$_POST['lobby'];
@@ -202,7 +201,7 @@ if($action===''){
 			$conn->query($query) or cout($conn->error);
 			
 		break;
-		case 'leavelobby':
+		case 'leavelobby'://wants to leave a lobby
 			//remove activity
 			$query="UPDATE player SET activity='' WHERE name='$playername'";
 			cout($query);
@@ -233,7 +232,7 @@ if($action===''){
 			}
 			return;
 		break;	
-		case 'ready':
+		case 'ready'://is ready to start game
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="UPDATE $table_name SET ready=TRUE WHERE playername='$playername'";
@@ -252,7 +251,7 @@ if($action===''){
 			setNotifyBits($table_name);
 			return;
 		break;
-		case 'updateparams':
+		case 'updateparams'://wants to change map parameters
 			//update params
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
@@ -261,7 +260,7 @@ if($action===''){
 			setNotifyBits($table_name);
 			return;
 		break;
-		case 'querylobby':
+		case 'querylobby'://wants to know about a lobby
 			
 
 			$id=$_POST['lobby_id'];
@@ -290,7 +289,7 @@ if($action===''){
 			}
 			return;
 		break;
-		case 'notifyentergame':
+		case 'notifyentergame'://has entered the game successfully
 			//set player activity to game1
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
@@ -304,7 +303,7 @@ if($action===''){
 			
 			return;
 		break;
-		case 'loadgamedata':
+		case 'loadgamedata'://wants to download the map and params and player list
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="SELECT * FROM lobby WHERE id=$id";
@@ -317,7 +316,7 @@ if($action===''){
 			echo json_encode($data);;
 			return;
 		break;
-		case 'notifyendturn':
+		case 'notifyendturn'://wants to submit moves, may be rejected
 			$moveset=$_POST['moveset'];
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
@@ -355,7 +354,7 @@ if($action===''){
 				return;
 			}
 		break;
-		case 'pollendturn':
+		case 'pollendturn'://is waiting for others to submit moves
 			
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
@@ -396,16 +395,13 @@ if($action===''){
 				
 			return;
 		break;
-		case 'uploadmap':
+		case 'uploadmap'://wants to upload the new map
 			$mapdata=$_POST['mapdata'];
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$turn=$_POST['turn'];
 			
-			/*
-			$query="SELECT turn FROM $table_name WHERE playername='$playername'";
-			$turn=$conn->query($query)->fetch_all(MYSQLI_ASSOC)[0]['turn'];
-			*/
+		
 			
 			$query="UPDATE lobby SET turn=$turn, map='".$conn->real_escape_string($mapdata)."' WHERE id=$id";
 			$conn->query($query) or cout($conn->error);
@@ -415,7 +411,7 @@ if($action===''){
 			$conn->query($query) or cout($conn->error);
 			cout("uploaded");
 		break;
-		case 'notifyquit':
+		case 'notifyquit'://wants to quit game
 			$id=$_POST['lobby_id'];
 			$table_name='lobby_'.$id;
 			$query="UPDATE  $table_name SET state=1 WHERE playername='$playername'";
@@ -448,7 +444,7 @@ if($action===''){
 
 			}
 		break;
-		default:
+		default://unreachable code hopefully
 			$page='login';
 			$page_data['notification']='congratulations, you found a bug';
 		break;
@@ -456,6 +452,7 @@ if($action===''){
 	}
 }
 
+//choose which page to load
 if($page!="none"){
 	echo '<!doctype html><html><head><title>Hex Game</title>
 		<link rel="stylesheet" type="text/css" href="css/style.css">
@@ -484,7 +481,4 @@ if($page!="none"){
 	}
 	echo '</body></html>';
 }
-
-
-
 ?>

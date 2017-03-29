@@ -27,7 +27,6 @@ $lobby_id=$page_data['lobby_id'];
 		<button onclick="razeOrder()" class="razeBtn"><em>RAZE</em></button>
 		<div style="margin-left:5px;float:left;background:yellow;border-radius:4px;border:2px solid blue">
 			<button id="buildbtncity" onclick="orderBuild('city')" class="blBtn"><b>CITY(5)</b></button>
-			<!--<button onclick="orderBuild('farm')" class="blBtn"><b>FARM(2)</b></button>!-->
 			<button id="buildbtnwall" onclick="orderBuild('wall')" class="blBtn"><b>WALL(2)</b></button>
 			<button id="buildbtncamp" onclick="orderBuild('camp')" class="blBtn"><b>CAMP(3)</b></button>
 		</div>

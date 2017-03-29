@@ -13,13 +13,13 @@ $lobby_id=$activity[1];
 var lobby_id='<?PHP echo $lobby_id;?>';
 var player='<?PHP echo $playername;?>';
 
-
+//update displayed information
 function redisplay(info){
 	console.log(info);
 	var ulist=id("players");
 	ulist.innerHTML="";//for some reason removeChild wasn't working
 	var params=JSON.parse(info.lobby.param);
-	var waiting=false;//do we need to wait for the game to start
+	var waiting=false;//do we need to wait for the game to start?
 	info.players.forEach((e)=>{
 		print(e);
 		var li=document.createElement('li');
@@ -43,16 +43,15 @@ function redisplay(info){
 	id("seed").value=params.seed;
 	id("dimx").value=params.dim[0];
 	id("dimy").value=params.dim[1];
-	//document.querySelector('input[name="maptype"][value='+params.maptype+']').checked=true;
-
+	
+	//game starts automatically when all players are ready
 	if(!waiting){
 		sendRequest("action=notifyentergame");
 		setTimeout(()=>{window.location.replace("index.php?playername="+player)},1000);
 	}
 }
 
-
-
+//query server for lobby info, force means do it now
 function getInfo(force){
 	var xhr=new XMLHttpRequest();
 	xhr.onreadystatechange=function(){
@@ -69,32 +68,33 @@ function getInfo(force){
 	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xhr.send("action=querylobby&lobby_id="+lobby_id+(force?"&force=true":""));
 	
-	//if allready
-	//	//	redirect page to game.php with js window.location.replace ?lob=$lobbyname
-		//	game.php: php will put lobby info in js variable to be processed
 }
+
+//initialize page
 function init(){
 	getInfo(true);
-	setInterval(getInfo,3000);
+	setInterval(getInfo,2000);
 }
 
+//from util.js
 var sendRequest=new SendRequest(lobby_id,player);
 
-
+//upload map settings
 function updateParams(){
 	var seed=id("seed").value;
 	var dim=[id('dimx').value,id('dimy').value]
-	//var maptype=document.querySelector('input[name="maptype"]:checked').value;
 
 	var params={seed:seed,dim:dim};
 	console.log("params="+encodeURI(JSON.stringify(params)));
 	sendRequest("action=updateparams&params="+encodeURI(JSON.stringify(params)));
-	
 }
+
+//return to browser
 function leave(){
 	sendRequest('action=leavelobby');
 	setTimeout(()=>{window.location.replace("index.php?playername="+player)},1000);
 }
+
 </script>
 <div class="centerbox" style="width:800px">
 <span style="text-align:center">

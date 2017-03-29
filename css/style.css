@@ -2,20 +2,16 @@ input[type=text],[type=password]{
 	border-radius: 2px;
 	border: 2px solid yellow;
 }
-
 .sesamestreet, input[type=number]{
 	color:yellow;
 	background:#00AA00;
 	border-radius: 2px;
 	border: 2px solid yellow;
-
 }
-
 input[type=number]{
 	width:3em;
 	
 }
-
 .point-through {
 	pointer-events:none;
 }
@@ -27,8 +23,6 @@ body{
 .fcount{
 	color:#FFFFFF;
 	z-index:50;
-	
-	
 }
 .moveInd{
 	color:#000000;
@@ -39,8 +33,6 @@ body{
 	color:#FFFF00;
 	z-index:50;
 	text-shadow:2px 2px black;
-	
-	
 }
 button{
 	float:left;
@@ -65,7 +57,7 @@ button:hover{
 	background:white;
 }
 .centerbox{
-width:200px;margin:0 auto;padding:10px;border:1px solid white;background:gray;overflow-x:auto
+	width:200px;margin:0 auto;padding:10px;border:1px solid white;background:gray;overflow-x:auto
 }
 .warning{
 	color:red;
@@ -79,10 +71,8 @@ input[type=button], input[type=submit]{
 	border-radius: 2px;
 	border: 2px solid yellow;
 }
-
-
 .outline{
-float:left;border: 1px solid yellow;padding:3px;border-radius:2px;margin:2px;
+	float:left;border: 1px solid yellow;padding:3px;border-radius:2px;margin:2px;
 }
 
 .plainlink{

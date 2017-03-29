@@ -2,7 +2,7 @@
 
 
 /**
- * Net
+ * Networking
  *
  */
 
@@ -20,13 +20,10 @@ function SendRequest(lobby_id,player){
 }
 
  
- 
- 
 /**
  * Misc
+ * nondestructive utilities
  */
-
-//everything is nondestructive unless noted
 
 //construct PRNG with seed because Math.random() isn't deterministic
 function Prng(x){
@@ -37,7 +34,7 @@ function Prng(x){
 	return f;
 }
 
-
+//random selection
 function Pick(prng){
 	var f=function(i,t){
 		return Math.floor(prng()*(t-i+1))+i;
@@ -56,6 +53,7 @@ function pick(i,t){
 	
 }
 
+//compare arrays
 Array.prototype.isEqual=function(o){
 	if(this.length!=o.length)return false;
 	for(var i=0;i<this.length;i++){
@@ -132,9 +130,8 @@ function get_adjacency(tileRef,filter){
 }
 
 
-
+//gets tile data from coordinates
 function getTile(tileRef){
-	
 	return game.map.tiles[tileRef[1]][tileRef[0]];
 }
 

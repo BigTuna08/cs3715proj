@@ -1,7 +1,6 @@
 "use strict";//do not delete, enables warnings
 var game;//persistent game state
 
-
 //function for one way communication with server
 var sendRequest=new SendRequest(lobby_id,playername);
 
@@ -20,20 +19,21 @@ function handleGameData(info){
 				raze:[]},
 		};
 	});
+	
+	//style interface with players colour
 	var deg=game.players[game.player].colour;
 	id("buttonrow").style.filter="hue-rotate("+deg+"deg)";
 	id("inforow").style.filter="hue-rotate("+deg+"deg)";
 	
-	//for util.js
+	//send info to util.js, bad coupling
 	tileDim=info.lobby.param.dim;
 	
 	//set timer to remaining time
 	if(info.lobby.turn==0){
 		console.log("turn zero, generating map from seed");
-	
-			generateMap(info.lobby.param);
-			
+		generateMap(info.lobby.param);
 	}else{
+		//player must have rejoined or refreshed the page
 		console.log("loading another players map")
 		game.map=JSON.parse(info.lobby.map);
 	}
@@ -46,7 +46,6 @@ function handleGameData(info){
 			me=e;
 			print(e);
 			return true;}});
-
 	if(me.turn==game.turn+1){
 		console.log("moves already submitted, please wait");
 		setPollState();
@@ -59,6 +58,7 @@ function handleGameData(info){
 	drawMap();
 }
 
+//make game stop polling for other player's moves
 function endPollState(){
 	id("endturnbutton").disabled=false;
 	game.input.disabled=false;
@@ -66,6 +66,7 @@ function endPollState(){
 	
 }
 
+//make game start polling for other player's moves
 function setPollState(){
 	id("endturnbutton").disabled=true;
 	//TODO disable all buttons
@@ -123,6 +124,7 @@ function loadGameData(){
 	xhr.send("action=loadgamedata&lobby_id="+game.lobby+"&playername="+game.player);
 }
 
+//submit moves and wait for response
 function endTurn(){
 	console.log("trying to send your moves");
 	id("endturnbutton").disabled=true;//need to do this as soon as possible
@@ -160,7 +162,7 @@ function endTurn(){
 	
 }
 
-//function PollEndTurn()
+//calculate new game state from new moves and increment turn
 function processNewMoves(info){
 	print("processing moves");
 	
@@ -173,6 +175,8 @@ function processNewMoves(info){
 		e.moveset.raze.forEach((m)=>{
 			game.map.tiles[m.tile[1]][m.tile[0]].building=null;
 	})});
+	
+	//deduct units for other players actions
 	
 	info.players.forEach((e)=>{
 		if(e.playername==game.player)return;
@@ -242,7 +246,7 @@ function processNewMoves(info){
 			
 	});
 	
-	//resolve temp tile structures
+	//construct conflict data in every tile that is attacked or defended
 	info.players.forEach((e)=>{
 		e.moveset.movement.forEach((m,i)=>{
 			if(m==null)return true;
@@ -278,6 +282,7 @@ function processNewMoves(info){
 		})
 	})
 	
+	//resolve conflicts between n players in each tile
 	game.map.tiles.forEach((row)=>{
 		row.forEach((tile)=>{
 			if(tile.temp!=undefined){
@@ -340,15 +345,13 @@ function processNewMoves(info){
 		})
 	})
 	
-
 	//check for nulls
 	var usedPop={};
 	var toPopulate=[];
 	var pops={};
 	var campNums={};
 	
-	
-	//clear temporary data and count pop and mark camps, and reset force
+	//clear temporary data and count population and mark camps, and reset force counters
 	game.map.tiles.forEach((row)=>{
 		row.forEach((e)=>{
 			if(e.owner!=null){
@@ -380,12 +383,13 @@ function processNewMoves(info){
 
 	});
 
-	
+	//determine if player can continue
 	var quit=false;
 	if(usedPop[game.player]==undefined){
 		quit=true;
 	}
 	
+	//determine if player won
 	var win=false;
 	if(!quit){
 		win=true;
@@ -395,7 +399,7 @@ function processNewMoves(info){
 		})
 	}
 	
-	//add forces from unused pop
+	//add population in camps where pop cap allows
 	toPopulate.forEach((e)=>{
 		var newForce=Math.round(((pops[e.owner]-usedPop[e.owner])/campNums[e.owner])/2);
 		if(isNaN(newForce)||newForce<0)return;
@@ -418,25 +422,24 @@ function processNewMoves(info){
 				//the units involved were lost
 				console.log("building destroyed while under construction");
 			}else{
-								console.log("placing building");
-
+				console.log("placing building");
 				getTile(m.tile).building=m.type;
 				if(m.type=="city"){
 					getTile(m.tile).buildingData={size:5};
-					
 				}
-			}})});
+	}})});
 	
-	
+	//reset orders
 	game.players[game.player].orders={
 		movement:[],
 		build:[],
 		raze:[]};
 	
-	//refresh entire map, I don't know how this doesn't flicker, must be magic
+	//refresh entire map at once, I don't know how this doesn't flicker, must be magic
 	drawMap();
-	game.input.selected=null;
 	
+	//reset selector
+	game.input.selected=null;
 	
 	if(quit){
 		if(!game.spectate){
@@ -457,15 +460,14 @@ function processNewMoves(info){
 		endPollState();
 	else
 		setPollState();//just to update counter, actually doesn't affect game
-	//send map back, server now knows client is ok
+	
+	//upload map, every client does it for redundancy and so error checking could be added later
 	var mapdata=encodeURI(JSON.stringify(game.map));
 	sendRequest("action=uploadmap&mapdata="+mapdata+"&turn="+game.turn);
 	
 }
 
-
-
-
+//initialize game
 function init(){
 	game={
 		lobby:null,
@@ -479,24 +481,25 @@ function init(){
 		numPlayers:0,
 		player:"",
 		buildingCosts:{"city":4,"wall":2,"camp":3}};
-	//most essential variables
 	
+	//fill build buttons correctly
 	["city","wall","camp"].forEach((e)=>{
 		id("buildbtn"+e).children[0].textContent=e.toUpperCase()+"("+game.buildingCosts[e]+")";
 	});
+	
+	//set essential variables to be used by ajax
 	game.player=playername;
 	game.lobby=lobby_id;
 	loadGameData();
 }
 
 
-
-
-//create hex grid
+//create hex grid, randomly generate from seed
 function generateMap(params){
 	var seed=params.seed;
 	var pick=Pick(Prng(seed));
 	
+	//random pick function from weighted probabilities
 	//weights on W should add to 100
 	function pickWeighted(W){
 		var x=pick(0,100);
@@ -511,7 +514,7 @@ function generateMap(params){
 		return val;
 	}
 	
-	
+	//prepare to place things randomly
 	
 	var forcePerPlayer=params.dim[0]*params.dim[1]*2;
 	
@@ -520,35 +523,34 @@ function generateMap(params){
 	});
 	
 	
-	//placement probabilites
+	//building placement probabilites
 	var structP=[{P:13,val:"city"},{P:20,val:"wall"},{P:7,val:"camp"},{p:100-13-20-7,val:"none"}];
 	
+	//place buildings randomly
 	game.map.x=parseInt(params.dim[0]);
 	game.map.y=parseInt(params.dim[1]);
 	var tiles=Array(game.map.y);
 	for(var y=0;y<tiles.length;y++){
 		tiles[y]=Array(game.map.x);
 		for(var x=0;x<tiles[y].length;x++){
-			//var force=pick(0,20);
 			tiles[y][x]={terrain:game.terrain[["grass","dirt"][pick(0,1)]],
-					//building:game.building[["city","wall"][pick(0,1)]],
 					owner:null,
 					force:0,
 					uncommitedForce:0
 				};
-			var tile=tiles[y][x];//getTile([x,y]);
+			var tile=tiles[y][x];
 			var build=null;
 			if((build=pickWeighted(structP))!="none"){
 				tile.building=build;
 				if(build=="city"){
 					tile.buildingData={size:pick(5,10)};
 				}
-				
 			}
 		}
 	}
 	game.map.tiles=tiles;
 	
+	//place units randomly
 	
 	var done=false;
 	var p=0;
@@ -593,13 +595,14 @@ function generateMap(params){
 	game.map.tiles=tiles;
 }
 
-//create html from hex grid
+//generate html structure of hex grid
 function drawMap(){
 
 	game.gfx.grid.innerHTML="";//clear whatever is left over
 	var tileHeight=game.gfx.tileDim[1];
 	var tileWidth=game.gfx.tileDim[0];
 	
+	//we use a fake image (div) over a real image linked to an html <map> to simulate a hex grid
 	[id("fakeimg"),id("behindimg"),id("parentdiv")].forEach((e)=>{
 		e.style.width=(1+game.map.tiles[0].length)*tileWidth+"px";//+1 to account for offset row
 		e.style.height=game.map.tiles.length*tileHeight+"px";
@@ -614,6 +617,8 @@ function drawMap(){
 	
 	game.map.tiles.forEach((row,y)=>{
 		row.forEach((tile,x)=>{
+			//the following code is mostly setting style attributes and contains very little logic
+			
 			var container=document.createElement('div');
 			tile.container=container;
 			var img=document.createElement("img");
@@ -621,8 +626,6 @@ function drawMap(){
 			img.style.position="absolute";
 			
 			
-			
-			//container.className="point-through";
 			img.src=game.terrain.path(tile.terrain);
 			
 			var offset=(y%2==0)?0:tileWidth/2;//offset for odd rows
@@ -636,8 +639,7 @@ function drawMap(){
 			container.appendChild(img);
 			container.className="point-through";
 			game.gfx.grid.appendChild(container);
-			
-		
+
 			if(tile.building!=null){
 
 				var building=document.createElement('img');
@@ -649,7 +651,6 @@ function drawMap(){
 					building.style.filter="grayscale(1)";
 				}else{
 					building.style.filter="hue-rotate("+game.players[tile.owner].colour+"deg)";
-					
 				}
 				container.appendChild(building);
 				if(tile.building=="city"){
@@ -659,25 +660,19 @@ function drawMap(){
 					popCount.style.width=game.gfx.tileDim[0]+"px";
 					popCount.style.top="35px";
 					popCount.style.textAlign="center";
-			
 					popCount.className="citycount";
 					popCount.appendChild(textNode);
 					container.appendChild(popCount);
-						
 				}
 			}
 			
 			if(tile.force!=0){
 				var forceCount=document.createElement('div');
-				
 				var textNode=document.createTextNode(tile.force);
 				forceCount.style.position="absolute";
 				forceCount.style.width=game.gfx.tileDim[0]+"px";
 				forceCount.style.top="10px";
 				forceCount.style.textAlign="center";
-				/*forceCount.style.color="white";
-				forceCount.style.zIndex="20";
-				forceCount.style.textShadow="1px 1px black";*/
 				forceCount.className="fcount";
 				forceCount.appendChild(textNode);
 				container.appendChild(forceCount);
@@ -691,8 +686,6 @@ function drawMap(){
 				hl.src="img/highlight.png";
 				container.appendChild(hl);
 			}
-			
-			
 			
 			var areaTag=document.createElement('area');
 			areaTag.shape="poly";
@@ -715,16 +708,16 @@ function drawMap(){
 				}
 			}
 			
-			
+			//create closure for each area tag
 			areaTag.onclick=Handler([x,y]);
-	
-			
+
 			imageMap.appendChild(areaTag);
 		})
 	})
 	
 }
 
+//player clicks quit
 function resign(){
 	var y=confirm("are you sure you want to quit?");
 	if(y)setTimeout(()=>{sendRequest('action=notifyquit');},200);
@@ -735,6 +728,7 @@ function resign(){
 	}
 }
 
+//player selects a tile
 function handleClick(tileRef){
 	if(game.input.disabled){
 		alert("please wait for other players");
@@ -786,6 +780,7 @@ function handleClick(tileRef){
 		}
 		
 		//lookup conflicting moves
+		
 		var simulIndex=-1;//a move in the same direction
 		var counterIndex=-1;//a move in the opposite direction
 		var existingOrder=orderArr.find(
@@ -826,6 +821,7 @@ function handleClick(tileRef){
 		}
 		
 		returnForce(source,-force);
+		
 		//CREATE GRAPHIC
 		var container=document.createElement('div');
 		var indicator=document.createElement("img");
@@ -857,6 +853,7 @@ function handleClick(tileRef){
 		game.input.selected=null;
 	}
 	
+	//visual selection effect
 	function highlight(tileRef){
 		getTile(tileRef).container.style.filter="brightness(1.4)";
 	}
@@ -867,7 +864,7 @@ function handleClick(tileRef){
 }
 
 
-//return or deduct from commited force, does not destroy anything
+//return or deduct from commited force in a tile and update graphic
 function returnForce(tile,x){
 
 	var fcount=tile.container.querySelector(".fcount");
@@ -876,7 +873,7 @@ function returnForce(tile,x){
 }
 
 
-
+//player clicked on a build button
 function orderBuild(type){
 	if(game.input.disabled)return;
 	if(game.input.selected==null){
@@ -904,7 +901,8 @@ function orderBuild(type){
 		return;
 	}
 	console.log("continueing with build order");
-	//special build conditions
+	
+	//check special build conditions
 	switch(type){
 		case 'city':
 			var tocheck=get_adjacency(game.input.selected,true);
@@ -928,6 +926,7 @@ function orderBuild(type){
 	game.players[game.player].orders.build.push({type:type,tile:game.input.selected});
 	tile.uncommitedForce-=forcecost;
 	
+	//draw build icon
 	tile.container.querySelector(".fcount").textContent=tile.uncommitedForce;
 	var gear =document.createElement('img');
 	gear.src="img/gear.png";
@@ -937,10 +936,11 @@ function orderBuild(type){
 
 }
 
+//player clicked raze
 function razeOrder(){
 	if(game.input.disabled)return;
 	if(game.input.selected==null){
-		alert("you must select a tile with a controlled building and present units");
+		alert("you must select a tile with a controlled building");
 		return;
 	}
 	var tile=getTile(game.input.selected);
